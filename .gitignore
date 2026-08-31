@@ -1,0 +1,106 @@
+# ==========================================
+# Miscellaneous
+# ==========================================
+
+*.class
+*.log
+*.pyc
+*.swp
+*.swo
+*.tmp
+*.bak
+
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+.atom/
+.build/
+.buildlog/
+.history/
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+
+# ==========================================
+# IntelliJ / Android Studio
+# ==========================================
+
+*.iml
+*.ipr
+*.iws
+.idea/
+
+
+# ==========================================
+# VS Code
+# ==========================================
+
+# Ignore VS Code configuration by default.
+# Remove the following line if you want to version-control
+# your workspace settings.
+.vscode/
+
+# Or, if you want to keep shared VS Code configuration:
+# .vscode/*
+# !.vscode/settings.json
+# !.vscode/extensions.json
+# !.vscode/launch.json
+# !.vscode/tasks.json
+
+
+# ==========================================
+# Flutter / Dart / Pub
+# ==========================================
+
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+.pub/
+.pub-cache/
+
+**/doc/api/
+
+**/ios/Flutter/.last_build_id
+
+/build/
+/coverage/
+
+
+# ==========================================
+# Flutter generated files
+# ==========================================
+
+app.*.symbols
+app.*.map.json
+
+
+# ==========================================
+# Android generated build artifacts
+# ==========================================
+
+/android/app/debug/
+/android/app/profile/
+/android/app/release/
+
+
+# ==========================================
+# Environment variables
+# ==========================================
+
+.env
+.env.*
+!.env.example
+
+
+# ==========================================
+# Cursor AI
+# ==========================================
+
+# Ignore Cursor configuration
+.cursor/
+
+# Ignore local automation scripts
+scripts/

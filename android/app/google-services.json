@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1025928185033",
+    "project_id": "message-dodome",
+    "storage_bucket": "message-dodome.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025928185033:android:b09b4c7fde9c2b0d8a3918",
+        "android_client_info": {
+          "package_name": "com.example.dodome"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdbGpMbp2-jVhIET-3RkLvHTYDSu4nJgw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

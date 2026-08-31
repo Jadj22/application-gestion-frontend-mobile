@@ -1,0 +1,28 @@
+﻿{
+    "id":  1,
+    "jsonrpc":  "2.0",
+    "result":  {
+                   "content":  [
+                                   {
+                                       "text":  "{\"name\":\"projects/9235544124643662404/screens/92bd859f2c3848cabd8931c4821d94ff\",\"title\":\"DODOME - Accueil Dashboard\",\"screenshot\":{\"name\":\"projects/9235544124643662404/files/6e658201df674c6eb27b19f5b02daeee\",\"downloadUrl\":\"https://lh3.googleusercontent.com/aida/AP1WRLv9wNn6ImGzWqop4G8uEN1xCgx1JcpACoDY7Sg1FTZ-4pNRlj9z6_e6VBRliVdKbdyOGUdoOVz8RFJyDL8RTp3jPacs2OM17Z2czCvFHnWxQD4TQ5yQS8Tl7vC90BNNqUjJHlKjGxF-EKOgd323D3PXxvuHMHC2CxV_m0yL6neCBiluAVlaHgFc9pcL9uKjbds-bOpeKoc1izVjFGWvcqnM1I4ItDhVjTF6W2-b8Kjf7kC0UvijmiepXTo\"},\"htmlCode\":{\"name\":\"projects/9235544124643662404/files/4503080d79bf45048065c219c75d3d0a\",\"downloadUrl\":\"https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sX2FiYjRkZDg0MzNiYTQ2NTk4NTQ3MmQ0NzAyZjkyNWMyEgsSBxC6sfC63hMYAZIBIwoKcHJvamVjdF9pZBIVQhM5MjM1NTQ0MTI0NjQzNjYyNDA0\u0026filename=\u0026opi=96797242\",\"mimeType\":\"text/html\"},\"width\":\"780\",\"height\":\"2422\",\"deviceType\":\"MOBILE\"}",
+                                       "type":  "text"
+                                   }
+                               ],
+                   "structuredContent":  {
+                                             "deviceType":  "MOBILE",
+                                             "height":  "2422",
+                                             "htmlCode":  {
+                                                              "downloadUrl":  "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sX2FiYjRkZDg0MzNiYTQ2NTk4NTQ3MmQ0NzAyZjkyNWMyEgsSBxC6sfC63hMYAZIBIwoKcHJvamVjdF9pZBIVQhM5MjM1NTQ0MTI0NjQzNjYyNDA0\u0026filename=\u0026opi=96797242",
+                                                              "mimeType":  "text/html",
+                                                              "name":  "projects/9235544124643662404/files/4503080d79bf45048065c219c75d3d0a"
+                                                          },
+                                             "name":  "projects/9235544124643662404/screens/92bd859f2c3848cabd8931c4821d94ff",
+                                             "screenshot":  {
+                                                                "downloadUrl":  "https://lh3.googleusercontent.com/aida/AP1WRLv9wNn6ImGzWqop4G8uEN1xCgx1JcpACoDY7Sg1FTZ-4pNRlj9z6_e6VBRliVdKbdyOGUdoOVz8RFJyDL8RTp3jPacs2OM17Z2czCvFHnWxQD4TQ5yQS8Tl7vC90BNNqUjJHlKjGxF-EKOgd323D3PXxvuHMHC2CxV_m0yL6neCBiluAVlaHgFc9pcL9uKjbds-bOpeKoc1izVjFGWvcqnM1I4ItDhVjTF6W2-b8Kjf7kC0UvijmiepXTo",
+                                                                "name":  "projects/9235544124643662404/files/6e658201df674c6eb27b19f5b02daeee"
+                                                            },
+                                             "title":  "DODOME - Accueil Dashboard",
+                                             "width":  "780"
+                                         }
+               }
+}

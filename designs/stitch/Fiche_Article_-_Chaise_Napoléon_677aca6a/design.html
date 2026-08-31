@@ -1,0 +1,120 @@
+<html lang="fr"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-primary-fixed-variant": "#3323cc", "on-background": "#0b1c30", "surface-container-highest": "#d3e4fe", "primary-fixed-dim": "#c3c0ff", "secondary-fixed": "#e1e3e4", "on-surface-variant": "#464555", "secondary-container": "#e1e3e4", "on-tertiary": "#ffffff", "on-secondary-container": "#626566", "secondary-fixed-dim": "#c5c7c8", "surface-bright": "#f8f9ff", "background": "#f8f9ff", "on-primary-container": "#dad7ff", "on-error": "#ffffff", "error": "#ba1a1a", "surface-container": "#e5eeff", "on-secondary-fixed-variant": "#454748", "tertiary-container": "#5f6061", "surface-dim": "#cbdbf5", "error-container": "#ffdad6", "surface-container-lowest": "#ffffff", "surface-container-low": "#eff4ff", "surface-container-high": "#dce9ff", "on-tertiary-fixed-variant": "#454747", "tertiary-fixed-dim": "#c6c6c7", "surface-tint": "#4d44e3", "on-primary-fixed": "#0f0069", "outline-variant": "#c7c4d8", "inverse-on-surface": "#eaf1ff", "on-secondary": "#ffffff", "outline": "#777587", "on-tertiary-fixed": "#1a1c1c", "on-error-container": "#93000a", "on-primary": "#ffffff", "tertiary": "#474949", "secondary": "#5c5f60", "on-surface": "#0b1c30", "on-tertiary-container": "#dbdbdb", "surface-variant": "#d3e4fe", "primary": "#3525cd", "inverse-surface": "#213145", "primary-container": "#4f46e5", "surface": "#f8f9ff", "tertiary-fixed": "#e2e2e2", "on-secondary-fixed": "#191c1d", "inverse-primary": "#c3c0ff", "primary-fixed": "#e2dfff" }, "borderRadius": { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }, "spacing": { "stack-gap": "16px", "element-padding-x": "20px", "container-padding": "24px", "unit": "4px", "element-padding-y": "16px", "section-gap": "32px" }, "fontFamily": { "body-md": ["Geist"], "headline-lg": ["Geist"], "body-lg": ["Geist"], "label-md": ["Geist"], "headline-md": ["Geist"], "headline-lg-mobile": ["Geist"], "label-sm": ["Geist"], "display-lg": ["Geist"] }, "fontSize": { "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }], "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }], "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }], "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }], "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }] } } } }</script><style>@layer base { body { background-color: #f8f9ff; } .pt-safe { padding-top: env(safe-area-inset-top, 0px); } } </style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="font-body-md text-on-surface"><header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl pt-safe"><div class="h-20 px-container-padding flex items-center gap-stack-gap"><button class="w-11 h-11 flex items-center justify-center rounded-full bg-surface-container-low" onclick="history.back()"><span class="material-symbols-outlined">arrow_back</span></button><h1 class="font-headline-md text-headline-md text-on-surface">Détails Article</h1></div></header><main class="pt-20 px-container-padding bg-surface min-h-screen"><div class="flex flex-col w-full gap-section-gap pb-container-padding">
+<!-- Main Image Section -->
+<section class="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-lg transform transition-transform hover:scale-[0.99] duration-300">
+<div class="bg-cover bg-center w-full h-full absolute inset-0" data-alt="A high-quality, elegant studio photograph of a classic white Napoleon chair. The chair is pristine, with delicate curves and a padded white seat. The background is a soft, muted pastel gray, providing excellent contrast while maintaining a premium, minimalist aesthetic. Soft, natural light highlights the glossy finish of the chair's wooden frame." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDFJJAwcSVTW1L1soEzcCz79FGHJfWoDzb1eAb0sjmoE0cKH1jQQy0FkeJloU1CrzDX3F6y2dwrIfeE2keQeKnFNar7ADmKuiFygh9TZzqCEfIh8VfPCY-24Jj2IWtmDVKhA3UmpjoE71gTIO1r9t44ZHRZEJN6lo-GIyW5qJWvXRGcczGM9_YM4HtkfNKrPCwVxKzFpYSJO1f3tSqoygij-I_fQUQKnZbiw2PmN5wzq5nztCqeRGDjHA')"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface/20"></div>
+<!-- Floating Action Button on Image -->
+<button class="absolute bottom-6 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-xl flex items-center justify-center transform hover:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">edit</span>
+</button>
+</section>
+<!-- Title & Primary Details -->
+<section class="flex flex-col gap-unit px-element-padding-x">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Chaise Napoléon Blanche</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Mobilier classique • Réf: NP-WH-001</p>
+</section>
+<!-- Key Metrics (Bento Style) -->
+<section class="grid grid-cols-2 gap-stack-gap px-element-padding-x">
+<!-- Total -->
+<div class="bg-surface-container-low rounded-2xl p-element-padding-x shadow-md flex flex-col justify-between aspect-square">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center mb-auto">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+</div>
+<div>
+<div class="font-display-lg text-display-lg text-on-surface">100</div>
+<div class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total</div>
+</div>
+</div>
+<!-- Disponible -->
+<div class="bg-surface-container-highest rounded-2xl p-element-padding-x shadow-md flex flex-col justify-between aspect-square">
+<div class="w-10 h-10 rounded-full bg-surface-tint/10 text-surface-tint flex items-center justify-center mb-auto">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<div class="font-display-lg text-display-lg text-on-surface">70</div>
+<div class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Disponible</div>
+</div>
+</div>
+<!-- Location -->
+<div class="bg-surface-container-low rounded-2xl p-element-padding-x shadow-md flex flex-col justify-between aspect-square">
+<div class="w-10 h-10 rounded-full bg-tertiary-container/20 text-tertiary flex items-center justify-center mb-auto">
+<span class="material-symbols-outlined">local_shipping</span>
+</div>
+<div>
+<div class="font-headline-lg text-headline-lg text-on-surface">20</div>
+<div class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Location</div>
+</div>
+</div>
+<!-- Entretien -->
+<div class="bg-surface-container-low rounded-2xl p-element-padding-x shadow-md flex flex-col justify-between aspect-square relative overflow-hidden">
+<div class="absolute -right-4 -bottom-4 w-24 h-24 bg-error-container/30 rounded-full blur-xl"></div>
+<div class="w-10 h-10 rounded-full bg-error-container text-on-error-container flex items-center justify-center mb-auto relative z-10">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">build</span>
+</div>
+<div class="relative z-10">
+<div class="font-headline-lg text-headline-lg text-on-surface">8</div>
+<div class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Entretien</div>
+</div>
+</div>
+</section>
+<!-- Timeline Section -->
+<section class="px-element-padding-x mt-stack-gap">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-stack-gap">Historique Récent</h2>
+<div class="relative pl-6">
+<!-- Vertical line -->
+<div class="absolute left-0 top-4 bottom-4 w-[2px] bg-outline-variant/50"></div>
+<div class="flex flex-col gap-stack-gap">
+<!-- Timeline Item 1 -->
+<div class="relative">
+<div class="absolute -left-[29px] top-4 w-3 h-3 rounded-full bg-primary shadow-[0_0_0_4px_theme(colors.surface)]"></div>
+<div class="bg-surface-container-lowest rounded-2xl p-element-padding-y shadow-sm flex items-center gap-stack-gap">
+<div class="flex-1">
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-1">12 Oct 2023</div>
+<div class="font-body-lg text-body-lg text-on-surface">Entrée de stock initial</div>
+</div>
+<div class="font-headline-md text-headline-md text-primary bg-primary/10 px-3 py-1 rounded-full">+100</div>
+</div>
+</div>
+<!-- Timeline Item 2 -->
+<div class="relative">
+<div class="absolute -left-[29px] top-4 w-3 h-3 rounded-full bg-tertiary shadow-[0_0_0_4px_theme(colors.surface)]"></div>
+<div class="bg-surface-container-lowest rounded-2xl p-element-padding-y shadow-sm flex items-center gap-stack-gap">
+<div class="flex-1">
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-1">15 Oct 2023</div>
+<div class="font-body-md text-body-md text-on-surface">Sortie pour événement "Gala"</div>
+</div>
+<div class="font-body-lg text-body-lg text-tertiary bg-tertiary/10 px-3 py-1 rounded-full">-30</div>
+</div>
+</div>
+<!-- Timeline Item 3 -->
+<div class="relative">
+<div class="absolute -left-[29px] top-4 w-3 h-3 rounded-full bg-secondary shadow-[0_0_0_4px_theme(colors.surface)]"></div>
+<div class="bg-surface-container-lowest rounded-2xl p-element-padding-y shadow-sm flex items-center gap-stack-gap">
+<div class="flex-1">
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-1">18 Oct 2023</div>
+<div class="font-body-md text-body-md text-on-surface">Retour partiel</div>
+</div>
+<div class="font-body-lg text-body-lg text-secondary bg-secondary/10 px-3 py-1 rounded-full">+28</div>
+</div>
+</div>
+<!-- Timeline Item 4 -->
+<div class="relative">
+<div class="absolute -left-[29px] top-4 w-3 h-3 rounded-full bg-error shadow-[0_0_0_4px_theme(colors.surface)]"></div>
+<div class="bg-surface-container-lowest rounded-2xl p-element-padding-y shadow-sm flex items-center gap-stack-gap border border-error-container">
+<div class="flex-1">
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-1">18 Oct 2023</div>
+<div class="font-body-md text-body-md text-on-surface">Signalement dommages</div>
+</div>
+<div class="font-body-lg text-body-lg text-error bg-error/10 px-3 py-1 rounded-full">-2</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div></main></body></html>

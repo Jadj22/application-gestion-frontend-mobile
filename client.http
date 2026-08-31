@@ -1,0 +1,6 @@
+
+
+### Validate invitation
+curl -X POST http://192.168.1.72:8000/api/invitations/validate/ \
+       -H "Content-Type: application/json" \
+       -d '{"code": "DODO-4JSKXV"}'

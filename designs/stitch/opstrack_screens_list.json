@@ -1,0 +1,125 @@
+﻿{
+    "id":  1,
+    "jsonrpc":  "2.0",
+    "result":  {
+                   "content":  [
+                                   {
+                                       "text":  "{\"screens\":[{\"name\":\"projects/9235544124643662404/screens/9612524407213904947\",\"title\":\"Screenshot_20260817-131649.jpg\",\"screenshot\":{\"name\":\"projects/9235544124643662404/files/9612524407213906944\",\"downloadUrl\":\"https://lh3.googleusercontent.com/aida/AP1WRLss-7_QKeAfq737V7rIy0UDhPxzu8zdaMvebtC0dVyQ5lnJlAJT6tBps54tdwPk8glKkKKjfXoisHm5cICYDrwZOFqFcBv-3vbWJo16ontjxEo3S-kkWkGSFuLdy5JRNKEnXIUuJ7iqwtOBLad759ioqiJfxFvZuHu9m_mANjPwXbt_iXyXV2LRNTEtkrqrgS0Iw2i8DF0U7Y7FK9ZszCDH43Q7VBBkmJfO3R2PuiWeAwOTjH7bwadeT1_A8ODfA4I7HYM65Janvg\"},\"htmlCode\":{},\"width\":\"1080\",\"height\":\"2460\"},{\"name\":\"projects/9235544124643662404/screens/4f916a8bb8a644bca28445acbba14778\",\"title\":\"Fiche Article - Chaise Napoléon\",\"screenshot\":{\"name\":\"projects/9235544124643662404/files/16483502236118650733\",\"downloadUrl\":\"https://lh3.googleusercontent.com/aida/AP1WRLvMSt4-ktaow0a7eO8S9rTFRBD5FgvVwQf39KTz_Aa5DDuMDHNc9F7RW9EEUWKqJ6FMuw3PYiOFvkXgLnKG3D2R4veinXU2WwYzVWQn46P_46BncLs8YFf1_Ra59crdmRXeeyMRIBb1Nc-2DYhm08qpvzF49pmMVFSiVvCGBx3i88B1Ffw3G5_WCpFR-82ulqPL_g7WILs-o6HIudwkfqCkCp2y-XFzu4eO-l5ssNPaLZjfx7LGN_qY6YQ\"},\"htmlCode\":{\"name\":\"projects/9235544124643662404/files/10786599065867540706\",\"downloadUrl\":\"https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzAwMDY1OTNlMzIyYjI3NjAwMjNiZGY2ZDE5MDZkNmVhEgsSBxC6sfC63hMYAZIBIwoKcHJvamVjdF9pZBIVQhM5MjM1NTQ0MTI0NjQzNjYyNDA0\u0026filename=\u0026opi=89354086\",\"mimeType\":\"text/html\"},\"width\":\"790\",\"height\":\"3202\",\"deviceType\":\"MOBILE\"},{\"name\":\"projects/9235544124643662404/screens/002bedaf11ae45088c83d288c2d82304\",\"title\":\"Enregistrer un Retour\",\"screenshot\":{\"name\":\"projects/9235544124643662404/files/16665640859495430354\",\"downloadUrl\":\"https://lh3.googleusercontent.com/aida/AP1WRLsjNdZLcup_cC86R6nSKx6EZ4T1L_hOD0qyuGB6cMoD6gOaXtGa13a7XBEdO4TkknKJgIE9UEfTERqIkSlWYj4UubD8i0IV2XflmqI9YMKbsCSd5ePvBFZ-sxPnyx_1jcDkBEM-d_-M7eiM1iVggyih2pm0whgCtQhzuj0Sm8C0L-4Gs3BI2ka00Xu_dBH2JNZ7Gq-Y6JtikVj5OhSlqeRwJNfoRVcrSu4GGKYIKwQjB-_0va8FZlc3oQ\"},\"htmlCode\":{\"name\":\"projects/9235544124643662404/files/16070739033788128448\",\"downloadUrl\":\"https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzAwMDY1OTNlMzE0NTYzOWUwMjNiZDViYmYzMmU5MmI0EgsSBxC6sfC63hMYAZIBIwoKcHJvamVjdF9pZBIVQhM5MjM1NTQ0MTI0NjQzNjYyNDA0\u0026filename=\u0026opi=89354086\",\"mimeType\":\"text/html\"},\"width\":\"780\",\"height\":\"2474\",\"deviceType\":\"MOBILE\"},{\"name\":\"projects/9235544124643662404/screens/67aefafc745c4a16bb9ebd74cd054e53\",\"title\":\"Catalogue \u0026 Stock\",\"screenshot\":{\"name\":\"projects/9235544124643662404/files/4613907789526434920\",\"downloadUrl\":\"https://lh3.googleusercontent.com/aida/AP1WRLs8_u-t1paJOFgHKF0BOW8xQI95suZEzOKjEJrZaAhn6rUh1voWbGhc2Yb7sndky1NeEblhsKFbit6kayY3CaS4D1_fxray7ezNnqtuELXtA9pS-xl5zpOsUPDCJfGlvdXTB7_Jojy4PWNJgIrTASQlCLSencFuvjrJMaZxMBrKwzS5-44nkVF9Q-qPQkRoTbZJTkU_zMiGAeCsEbzWpSykFizQkRvUovNOw3kvt2ewOpU-4jZwIZ0UjA\"},\"htmlCode\":{\"name\":\"projects/9235544124643662404/files/2778980792573065953\",\"downloadUrl\":\"https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzAwMDY1OTNlMzBjMWJkNjUwMzU2Y2Y4ZmIwMmM2N2RjEgsSBxC6sfC63hMYAZIBIwoKcHJvamVjdF9pZBIVQhM5MjM1NTQ0MTI0NjQzNjYyNDA0\u0026filename=\u0026opi=89354086\",\"mimeType\":\"text/html\"},\"width\":\"780\",\"height\":\"1896\",\"deviceType\":\"MOBILE\"},{\"name\":\"projects/9235544124643662404/screens/c519f4bf36b344539fee3287e466b31e\",\"title\":\"Dashboard Opérationnel (FR)\",\"screenshot\":{\"name\":\"projects/9235544124643662404/files/8128207704745482684\",\"downloadUrl\":\"https://lh3.googleusercontent.com/aida/AP1WRLt724EQp-ofIUjXvFRqhMhhPYj9iyOKbWJ1YmT97BIWIXfbJvQuY2gaIs9i3s421yvYKO9995KuAYklkg9nxWArOsXe13yFw6_FKhLq7zLZoWPT0ry_39wyQjZqlibMSGjiU9GB05hyUYYMD-uP6Pxfh5adA2FHzAHeqBQ5Y6xLJPaCdPK_NH-QtrXm1EAlvkGXqLKMBfMnNAzUTT3S_cDrlzMUZP2RHqtjJJPbskQUopxLOFgN0HVRA4s\"},\"htmlCode\":{\"name\":\"projects/9235544124643662404/files/10287560304817961573\",\"downloadUrl\":\"https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzAwMDY1OTNlMzFjZGY0NDEwNGU3NGFiYjVmMzFiMjViEgsSBxC6sfC63hMYAZIBIwoKcHJvamVjdF9pZBIVQhM5MjM1NTQ0MTI0NjQzNjYyNDA0\u0026filename=\u0026opi=89354086\",\"mimeType\":\"text/html\"},\"width\":\"780\",\"height\":\"3348\",\"deviceType\":\"MOBILE\"},{\"name\":\"projects/9235544124643662404/screens/c83c27a46fda4c31906047c817e7f3dc\",\"title\":\"Inventaire Physique\",\"screenshot\":{\"name\":\"projects/9235544124643662404/screens/c83c27a46fda4c31906047c817e7f3dc/fileEntries/screenshot\",\"downloadUrl\":\"https://lh3.googleusercontent.com/aida/AP1WRLvzQP4VQ5EdV9OelxGuveqisMIJQexUfvtyoTn1foEnfrdVfvRipqUSRx3ArxzXd9BxOHivW_MZehy9UU8Z7TOsQYPp7Yzb5kr7Z_lo4s0saZoZqEUfRszXz2R3FYsRX9a-DiiAoNWSGcv3kiJ61-LmRXi77R3urX7ThNoUXhtNKnBuiqF4qHft2FXxGHhb48x4d8yvjhXS9mcWx9jqU6E6EsmjNHbOsRyiswVyHowzw1jQC0zfUot8P24\"},\"htmlCode\":{\"name\":\"projects/9235544124643662404/screens/c83c27a46fda4c31906047c817e7f3dc/fileEntries/html\",\"downloadUrl\":\"https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzAwMDY1OTJkNDczNTE1NWYwNWYxMWI4ZTJmMWNkNzk4EgsSBxC6sfC63hMYAZIBIwoKcHJvamVjdF9pZBIVQhM5MjM1NTQ0MTI0NjQzNjYyNDA0\u0026filename=\u0026opi=89354086\",\"mimeType\":\"text/html\"},\"width\":\"780\",\"height\":\"2516\",\"deviceType\":\"MOBILE\"},{\"name\":\"projects/9235544124643662404/screens/f9105c78cf5d4803b9ab08464bba5f2c\",\"title\":\"Suivi d\u0027Entretien\",\"screenshot\":{\"name\":\"projects/9235544124643662404/files/16564577136914782205\",\"downloadUrl\":\"https://lh3.googleusercontent.com/aida/AP1WRLtyVfxVFcfCm7VJT_0pReUECeRQG9xexKPxRA-7zIKn58UMbVtWOds33NpehoaXA7DOPMQS5riNRlaN8C5msjCFySjmq-6_RCYD0GV24N4D5_gNFh4Ar6KBM2_-ZcDM-RRESYO98qX0FMYQw3v6PA_SVP1nAbbUNPRbgSSHPkeg472OGqMlfqhAVFWuuJc7rKHrF-4isL6NJlErAfnjAzZD9zCuWWU6t6n7VjJP-YOnSRnLDDB5re6Jayc\"},\"htmlCode\":{\"name\":\"projects/9235544124643662404/files/1929053415611283421\",\"downloadUrl\":\"https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzAwMDY1OTNlMzEyOGI0YTgwNWYxMzQ1YTcyMGI4NWMzEgsSBxC6sfC63hMYAZIBIwoKcHJvamVjdF9pZBIVQhM5MjM1NTQ0MTI0NjQzNjYyNDA0\u0026filename=\u0026opi=89354086\",\"mimeType\":\"text/html\"},\"width\":\"780\",\"height\":\"1768\",\"deviceType\":\"MOBILE\"}]}",
+                                       "type":  "text"
+                                   }
+                               ],
+                   "structuredContent":  {
+                                             "screens":  [
+                                                             {
+                                                                 "height":  "2460",
+                                                                 "htmlCode":  {
+
+                                                                              },
+                                                                 "name":  "projects/9235544124643662404/screens/9612524407213904947",
+                                                                 "screenshot":  {
+                                                                                    "downloadUrl":  "https://lh3.googleusercontent.com/aida/AP1WRLss-7_QKeAfq737V7rIy0UDhPxzu8zdaMvebtC0dVyQ5lnJlAJT6tBps54tdwPk8glKkKKjfXoisHm5cICYDrwZOFqFcBv-3vbWJo16ontjxEo3S-kkWkGSFuLdy5JRNKEnXIUuJ7iqwtOBLad759ioqiJfxFvZuHu9m_mANjPwXbt_iXyXV2LRNTEtkrqrgS0Iw2i8DF0U7Y7FK9ZszCDH43Q7VBBkmJfO3R2PuiWeAwOTjH7bwadeT1_A8ODfA4I7HYM65Janvg",
+                                                                                    "name":  "projects/9235544124643662404/files/9612524407213906944"
+                                                                                },
+                                                                 "title":  "Screenshot_20260817-131649.jpg",
+                                                                 "width":  "1080"
+                                                             },
+                                                             {
+                                                                 "deviceType":  "MOBILE",
+                                                                 "height":  "3202",
+                                                                 "htmlCode":  {
+                                                                                  "downloadUrl":  "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzAwMDY1OTNlMzIyYjI3NjAwMjNiZGY2ZDE5MDZkNmVhEgsSBxC6sfC63hMYAZIBIwoKcHJvamVjdF9pZBIVQhM5MjM1NTQ0MTI0NjQzNjYyNDA0\u0026filename=\u0026opi=89354086",
+                                                                                  "mimeType":  "text/html",
+                                                                                  "name":  "projects/9235544124643662404/files/10786599065867540706"
+                                                                              },
+                                                                 "name":  "projects/9235544124643662404/screens/4f916a8bb8a644bca28445acbba14778",
+                                                                 "screenshot":  {
+                                                                                    "downloadUrl":  "https://lh3.googleusercontent.com/aida/AP1WRLvMSt4-ktaow0a7eO8S9rTFRBD5FgvVwQf39KTz_Aa5DDuMDHNc9F7RW9EEUWKqJ6FMuw3PYiOFvkXgLnKG3D2R4veinXU2WwYzVWQn46P_46BncLs8YFf1_Ra59crdmRXeeyMRIBb1Nc-2DYhm08qpvzF49pmMVFSiVvCGBx3i88B1Ffw3G5_WCpFR-82ulqPL_g7WILs-o6HIudwkfqCkCp2y-XFzu4eO-l5ssNPaLZjfx7LGN_qY6YQ",
+                                                                                    "name":  "projects/9235544124643662404/files/16483502236118650733"
+                                                                                },
+                                                                 "title":  "Fiche Article - Chaise Napoléon",
+                                                                 "width":  "790"
+                                                             },
+                                                             {
+                                                                 "deviceType":  "MOBILE",
+                                                                 "height":  "2474",
+                                                                 "htmlCode":  {
+                                                                                  "downloadUrl":  "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzAwMDY1OTNlMzE0NTYzOWUwMjNiZDViYmYzMmU5MmI0EgsSBxC6sfC63hMYAZIBIwoKcHJvamVjdF9pZBIVQhM5MjM1NTQ0MTI0NjQzNjYyNDA0\u0026filename=\u0026opi=89354086",
+                                                                                  "mimeType":  "text/html",
+                                                                                  "name":  "projects/9235544124643662404/files/16070739033788128448"
+                                                                              },
+                                                                 "name":  "projects/9235544124643662404/screens/002bedaf11ae45088c83d288c2d82304",
+                                                                 "screenshot":  {
+                                                                                    "downloadUrl":  "https://lh3.googleusercontent.com/aida/AP1WRLsjNdZLcup_cC86R6nSKx6EZ4T1L_hOD0qyuGB6cMoD6gOaXtGa13a7XBEdO4TkknKJgIE9UEfTERqIkSlWYj4UubD8i0IV2XflmqI9YMKbsCSd5ePvBFZ-sxPnyx_1jcDkBEM-d_-M7eiM1iVggyih2pm0whgCtQhzuj0Sm8C0L-4Gs3BI2ka00Xu_dBH2JNZ7Gq-Y6JtikVj5OhSlqeRwJNfoRVcrSu4GGKYIKwQjB-_0va8FZlc3oQ",
+                                                                                    "name":  "projects/9235544124643662404/files/16665640859495430354"
+                                                                                },
+                                                                 "title":  "Enregistrer un Retour",
+                                                                 "width":  "780"
+                                                             },
+                                                             {
+                                                                 "deviceType":  "MOBILE",
+                                                                 "height":  "1896",
+                                                                 "htmlCode":  {
+                                                                                  "downloadUrl":  "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzAwMDY1OTNlMzBjMWJkNjUwMzU2Y2Y4ZmIwMmM2N2RjEgsSBxC6sfC63hMYAZIBIwoKcHJvamVjdF9pZBIVQhM5MjM1NTQ0MTI0NjQzNjYyNDA0\u0026filename=\u0026opi=89354086",
+                                                                                  "mimeType":  "text/html",
+                                                                                  "name":  "projects/9235544124643662404/files/2778980792573065953"
+                                                                              },
+                                                                 "name":  "projects/9235544124643662404/screens/67aefafc745c4a16bb9ebd74cd054e53",
+                                                                 "screenshot":  {
+                                                                                    "downloadUrl":  "https://lh3.googleusercontent.com/aida/AP1WRLs8_u-t1paJOFgHKF0BOW8xQI95suZEzOKjEJrZaAhn6rUh1voWbGhc2Yb7sndky1NeEblhsKFbit6kayY3CaS4D1_fxray7ezNnqtuELXtA9pS-xl5zpOsUPDCJfGlvdXTB7_Jojy4PWNJgIrTASQlCLSencFuvjrJMaZxMBrKwzS5-44nkVF9Q-qPQkRoTbZJTkU_zMiGAeCsEbzWpSykFizQkRvUovNOw3kvt2ewOpU-4jZwIZ0UjA",
+                                                                                    "name":  "projects/9235544124643662404/files/4613907789526434920"
+                                                                                },
+                                                                 "title":  "Catalogue \u0026 Stock",
+                                                                 "width":  "780"
+                                                             },
+                                                             {
+                                                                 "deviceType":  "MOBILE",
+                                                                 "height":  "3348",
+                                                                 "htmlCode":  {
+                                                                                  "downloadUrl":  "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzAwMDY1OTNlMzFjZGY0NDEwNGU3NGFiYjVmMzFiMjViEgsSBxC6sfC63hMYAZIBIwoKcHJvamVjdF9pZBIVQhM5MjM1NTQ0MTI0NjQzNjYyNDA0\u0026filename=\u0026opi=89354086",
+                                                                                  "mimeType":  "text/html",
+                                                                                  "name":  "projects/9235544124643662404/files/10287560304817961573"
+                                                                              },
+                                                                 "name":  "projects/9235544124643662404/screens/c519f4bf36b344539fee3287e466b31e",
+                                                                 "screenshot":  {
+                                                                                    "downloadUrl":  "https://lh3.googleusercontent.com/aida/AP1WRLt724EQp-ofIUjXvFRqhMhhPYj9iyOKbWJ1YmT97BIWIXfbJvQuY2gaIs9i3s421yvYKO9995KuAYklkg9nxWArOsXe13yFw6_FKhLq7zLZoWPT0ry_39wyQjZqlibMSGjiU9GB05hyUYYMD-uP6Pxfh5adA2FHzAHeqBQ5Y6xLJPaCdPK_NH-QtrXm1EAlvkGXqLKMBfMnNAzUTT3S_cDrlzMUZP2RHqtjJJPbskQUopxLOFgN0HVRA4s",
+                                                                                    "name":  "projects/9235544124643662404/files/8128207704745482684"
+                                                                                },
+                                                                 "title":  "Dashboard Opérationnel (FR)",
+                                                                 "width":  "780"
+                                                             },
+                                                             {
+                                                                 "deviceType":  "MOBILE",
+                                                                 "height":  "2516",
+                                                                 "htmlCode":  {
+                                                                                  "downloadUrl":  "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzAwMDY1OTJkNDczNTE1NWYwNWYxMWI4ZTJmMWNkNzk4EgsSBxC6sfC63hMYAZIBIwoKcHJvamVjdF9pZBIVQhM5MjM1NTQ0MTI0NjQzNjYyNDA0\u0026filename=\u0026opi=89354086",
+                                                                                  "mimeType":  "text/html",
+                                                                                  "name":  "projects/9235544124643662404/screens/c83c27a46fda4c31906047c817e7f3dc/fileEntries/html"
+                                                                              },
+                                                                 "name":  "projects/9235544124643662404/screens/c83c27a46fda4c31906047c817e7f3dc",
+                                                                 "screenshot":  {
+                                                                                    "downloadUrl":  "https://lh3.googleusercontent.com/aida/AP1WRLvzQP4VQ5EdV9OelxGuveqisMIJQexUfvtyoTn1foEnfrdVfvRipqUSRx3ArxzXd9BxOHivW_MZehy9UU8Z7TOsQYPp7Yzb5kr7Z_lo4s0saZoZqEUfRszXz2R3FYsRX9a-DiiAoNWSGcv3kiJ61-LmRXi77R3urX7ThNoUXhtNKnBuiqF4qHft2FXxGHhb48x4d8yvjhXS9mcWx9jqU6E6EsmjNHbOsRyiswVyHowzw1jQC0zfUot8P24",
+                                                                                    "name":  "projects/9235544124643662404/screens/c83c27a46fda4c31906047c817e7f3dc/fileEntries/screenshot"
+                                                                                },
+                                                                 "title":  "Inventaire Physique",
+                                                                 "width":  "780"
+                                                             },
+                                                             {
+                                                                 "deviceType":  "MOBILE",
+                                                                 "height":  "1768",
+                                                                 "htmlCode":  {
+                                                                                  "downloadUrl":  "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzAwMDY1OTNlMzEyOGI0YTgwNWYxMzQ1YTcyMGI4NWMzEgsSBxC6sfC63hMYAZIBIwoKcHJvamVjdF9pZBIVQhM5MjM1NTQ0MTI0NjQzNjYyNDA0\u0026filename=\u0026opi=89354086",
+                                                                                  "mimeType":  "text/html",
+                                                                                  "name":  "projects/9235544124643662404/files/1929053415611283421"
+                                                                              },
+                                                                 "name":  "projects/9235544124643662404/screens/f9105c78cf5d4803b9ab08464bba5f2c",
+                                                                 "screenshot":  {
+                                                                                    "downloadUrl":  "https://lh3.googleusercontent.com/aida/AP1WRLtyVfxVFcfCm7VJT_0pReUECeRQG9xexKPxRA-7zIKn58UMbVtWOds33NpehoaXA7DOPMQS5riNRlaN8C5msjCFySjmq-6_RCYD0GV24N4D5_gNFh4Ar6KBM2_-ZcDM-RRESYO98qX0FMYQw3v6PA_SVP1nAbbUNPRbgSSHPkeg472OGqMlfqhAVFWuuJc7rKHrF-4isL6NJlErAfnjAzZD9zCuWWU6t6n7VjJP-YOnSRnLDDB5re6Jayc",
+                                                                                    "name":  "projects/9235544124643662404/files/16564577136914782205"
+                                                                                },
+                                                                 "title":  "Suivi d\u0027Entretien",
+                                                                 "width":  "780"
+                                                             }
+                                                         ]
+                                         }
+               }
+}
