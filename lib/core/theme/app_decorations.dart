@@ -66,4 +66,13 @@ class AppDecorations {
         border: Border.all(color: AppColors.border.withValues(alpha: 0.6)),
         boxShadow: cardShadow,
       );
+
+  /// Carte flottante avec fond personnalisable (StatCard, KPI, etc.)
+  static BoxDecoration floatingCard({Color? color, double radius = 20}) =>
+      BoxDecoration(
+        color: color ?? AppColors.surface,
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(color: AppColors.border, width: 1),
+        boxShadow: cardShadow,
+      );
 }

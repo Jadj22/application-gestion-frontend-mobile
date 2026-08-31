@@ -48,6 +48,19 @@ class AppColors {
   static const Color kpiBlue = Color(0xFF3B82F6);
   static const Color kpiViolet = Color(0xFF8B5CF6);
 
+  /// Aliases de compatibilité pour les widgets historiques (nav bar, home screen, etc.)
+  static const Color dashPrimary = primary;
+  static const Color dashSecondary = price;
+  static const Color dashSurface = surface;
+  static const Color dashSurfaceLow = background;
+  static const Color dashSurfaceLowest = Color(0xFFF4F7F5);
+  static const Color dashSurfaceContainer = surfaceMuted;
+  static const Color dashSecondaryContainer = primaryLight;
+  static const Color dashOnSurface = textPrimary;
+  static const Color dashOnSurfaceVariant = textSecondary;
+  static const Color dashOutline = hint;
+  static const Color dashOutlineVariant = border;
+
   static Color statusBackgroundColor(String status) {
     switch (status.toUpperCase()) {
       case 'EN_ATTENTE':
