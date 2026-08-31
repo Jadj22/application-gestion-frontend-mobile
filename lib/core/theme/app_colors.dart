@@ -41,6 +41,14 @@ class AppColors {
   static const Color badgeNeutralFg = Color(0xFF475569);
   static const Color badgeNeutralBorder = Color(0xFFE2E8F0);
 
+  static const Color badgeIndigoBg = Color(0xFFEEF2FF);
+  static const Color badgeIndigoFg = Color(0xFF4F46E5);
+  static const Color badgeIndigoBorder = Color(0xFFC7D2FE);
+
+  static const Color badgeDangerBg = Color(0xFFFEECEB);
+  static const Color badgeDangerFg = Color(0xFFDC2626);
+  static const Color badgeDangerBorder = Color(0xFFFCA5A5);
+
   static const Color kpiGreen = Color(0xFF10B981);
   static const Color kpiIndigo = Color(0xFF6366F1);
   static const Color kpiAmber = Color(0xFFF59E0B);
@@ -49,17 +57,22 @@ class AppColors {
   static const Color kpiViolet = Color(0xFF8B5CF6);
 
   /// Aliases de compatibilité pour les widgets historiques (nav bar, home screen, etc.)
-  static const Color dashPrimary = primary;
-  static const Color dashSecondary = price;
-  static const Color dashSurface = surface;
-  static const Color dashSurfaceLow = background;
+  static const Color dashPrimary = Color(0xFF117A65);        // = primary
+  static const Color dashSecondary = Color(0xFF059669);      // = price
+  static const Color dashSurface = Color(0xFFFFFFFF);        // = surface
+  static const Color dashSurfaceLow = Color(0xFFFAF9F6);     // = background
   static const Color dashSurfaceLowest = Color(0xFFF4F7F5);
-  static const Color dashSurfaceContainer = surfaceMuted;
-  static const Color dashSecondaryContainer = primaryLight;
-  static const Color dashOnSurface = textPrimary;
-  static const Color dashOnSurfaceVariant = textSecondary;
-  static const Color dashOutline = hint;
-  static const Color dashOutlineVariant = border;
+  static const Color dashSurfaceContainer = Color(0xFFF1F4F2); // = surfaceMuted
+  static const Color dashSecondaryContainer = Color(0xFFE6F4F0); // = primaryLight
+  static const Color dashOnSurface = Color(0xFF1B2421);      // = textPrimary
+  static const Color dashOnSurfaceVariant = Color(0xFF5A6A64); // = textSecondary
+  static const Color dashOutline = Color(0xFF8F9E98);        // = hint
+  static const Color dashOutlineVariant = Color(0xFFDFE5E2); // = border
+  static const Color dashError = Color(0xFFDC2626);          // = dangerText
+  static const Color dashErrorContainer = Color(0xFFFEECEB); // = danger
+  static const Color dashSurfaceTint = Color(0xFFE6F4F0);    // = primaryLight
+  static const Color dashTertiaryContainer = Color(0xFFE8F5E9);
+  static const Color dashTertiaryContainerBg = Color(0xFFF1FAF1);
 
   static Color statusBackgroundColor(String status) {
     switch (status.toUpperCase()) {
