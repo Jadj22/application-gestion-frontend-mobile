@@ -58,7 +58,7 @@ class NetworkUnavailableException implements Exception {
   ]);
 
   @override
-  String toString() => message;
+  String toString() => cause != null ? '$message ($cause)' : message;
 }
 
 /// Entrée du cache en mémoire.
@@ -101,8 +101,8 @@ class ApiClient {
   /// Durée de fraîcheur d'un GET en cache (2 minutes par défaut).
   Duration defaultTtl = const Duration(minutes: 2);
 
-  /// Délai au-delà duquel une requête est considérée comme perdue (45s pour supporter le cold start Render).
-  Duration timeout = const Duration(seconds: 45);
+  /// Délai au-delà duquel une requête est considérée comme perdue (75s pour supporter le réveil complet de Render).
+  Duration timeout = const Duration(seconds: 75);
 
   /// Notifié à chaque requête aboutie ou perdue, pour que le service de
   /// connectivité tienne son état à jour sans sonder en permanence.

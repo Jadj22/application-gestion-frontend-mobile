@@ -80,6 +80,12 @@ class _LoginPageState extends State<LoginPage>
       _showError(e.message);
     } on ApiException catch (e) {
       _showError(e.message);
+    } on NetworkUnavailableException {
+      _showError(
+        'Impossible de joindre le serveur.\n\n'
+        'Le serveur distant est peut-être en cours de réveil. '
+        'Patientez quelques secondes et réessayez.',
+      );
     } catch (e) {
       if (e is GoogleSignInException &&
           (e.code == GoogleSignInExceptionCode.canceled ||

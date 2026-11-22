@@ -353,6 +353,12 @@ class SessionController extends ChangeNotifier {
       // Enregistrer le token push après connexion Google
       _registerPushToken();
       return true;
+    } on NetworkUnavailableException {
+      throw const OfflineUnsupportedException(
+        'Impossible de joindre le serveur backend.\n\n'
+        'Le serveur distant est peut-être en cours de réveil. '
+        'Veuillez patienter quelques instants et réessayer.',
+      );
     } finally {
       _setGoogleBusy(false);
     }
