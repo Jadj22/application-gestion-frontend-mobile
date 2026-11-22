@@ -25,7 +25,7 @@ import 'more_page.dart';
 import '../widgets/actions_journal_widgets.dart';
 
 // ---------------------------------------------------------------------------
-// HomeScreen — maquette Stitch « Joël Events & Décoration » (accuiel.html)
+// HomeScreen â€” maquette Stitch Â« JoÃ«l Events & DÃ©coration Â» (accuiel.html)
 // ---------------------------------------------------------------------------
 
 class HomeScreen extends StatefulWidget {
@@ -43,8 +43,8 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _error;
   HomeDashboard? _dashboard;
 
-  // Cibles du guide de démarrage (onglet Plus) sur les vrais widgets du
-  // dashboard — pas une maquette séparée.
+  // Cibles du guide de dÃ©marrage (onglet Plus) sur les vrais widgets du
+  // dashboard â€” pas une maquette sÃ©parÃ©e.
   final _topBarKey = GlobalKey();
   final _kpiGridKey = GlobalKey();
   final _newActionKey = GlobalKey();
@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       GuideStep(
         targetKey: _kpiGridKey,
-        title: 'Suivi du stock en un coup d\'œil',
+        title: 'Suivi du stock en un coup d\'Å“il',
         description:
             'Total, disponible, en location, entretien... Touchez une carte '
             'pour filtrer l\'inventaire correspondant.',
@@ -79,15 +79,15 @@ class _HomeScreenState extends State<HomeScreen> {
         targetKey: _newActionKey,
         title: 'Nouvelle action rapide',
         description:
-            'Ajoutez un article, une entrée de stock ou une catégorie en '
+            'Ajoutez un article, une entrÃ©e de stock ou une catÃ©gorie en '
             'un instant.',
       ),
       GuideStep(
         targetKey: _bottomNavKey,
         title: 'Naviguez dans l\'app',
         description:
-            'Inventaire, Entretien, Réservations et Plus sont toujours à '
-            'portée de main.',
+            'Inventaire, Entretien, RÃ©servations et Plus sont toujours Ã  '
+            'portÃ©e de main.',
       ),
     ]);
   }
@@ -182,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openAddItem() async {
     final canAdd = context.read<SessionController>().can('item.edit');
     if (!canAdd) {
-      _showPermissionDenied('gérer les articles');
+      _showPermissionDenied('gÃ©rer les articles');
       return;
     }
     final created = await Navigator.of(context).push<ItemModel>(
@@ -191,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (created != null && mounted) {
       _load();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('« ${created.nom} » a été ajouté au catalogue.')),
+        SnackBar(content: Text('Â« ${created.nom} Â» a Ã©tÃ© ajoutÃ© au catalogue.')),
       );
     }
   }
@@ -199,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openStockEntry() async {
     final canMove = context.read<SessionController>().can('stock.mouvement');
     if (!canMove) {
-      _showPermissionDenied('gérer le stock');
+      _showPermissionDenied('gÃ©rer le stock');
       return;
     }
     final movement = await Navigator.of(context).push<StockMovementModel>(
@@ -210,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '+${movement.quantite} « ${movement.itemNom} » ajouté au stock.',
+            '+${movement.quantite} Â« ${movement.itemNom} Â» ajoutÃ© au stock.',
           ),
         ),
       );
@@ -220,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openNewCategory() async {
     final canManage = context.read<SessionController>().can('catalog.manage');
     if (!canManage) {
-      _showPermissionDenied('gérer le catalogue');
+      _showPermissionDenied('gÃ©rer le catalogue');
       return;
     }
     final category = await Navigator.of(context).push<CategoryModel>(
@@ -230,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _load();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('La catégorie « ${category.nom} » a été créée.'),
+          content: Text('La catÃ©gorie Â« ${category.nom} Â» a Ã©tÃ© crÃ©Ã©e.'),
         ),
       );
     }
@@ -267,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               _QuickActionTile(
                 icon: Icons.add_circle_outline,
-                label: 'Nouvelle entrée de stock',
+                label: 'Nouvelle entre de stock',
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   _openStockEntry();
@@ -291,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildDashboard() {
     final businessName =
         context.watch<SessionController>().currentBusiness?.nom ??
-            'Joël Events & Décoration';
+            'JoÃ«l Events & DÃ©coration';
 
     return Column(
       children: [
@@ -391,53 +391,101 @@ class _DashboardTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 64,
-      decoration: BoxDecoration(
+      height: 68,
+      decoration: const BoxDecoration(
         color: AppColors.dashSurface,
         border: Border(
-          bottom: BorderSide(color: AppColors.dashOutlineVariant),
+          bottom: BorderSide(color: AppColors.dashOutlineVariant, width: 1),
         ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
+          // â”€â”€ Logo badge D â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: AppColors.dashPrimary,
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: const Center(
+              child: Text(
+                'D',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  fontFamily: 'Georgia',
+                  height: 1.0,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          // â”€â”€ Nom du business â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  businessName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.dashOnSurface,
+                    letterSpacing: -0.3,
+                    height: 1.1,
+                  ),
+                ),
+                const Text(
+                  'Tableau de bord',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.dashOnSurfaceVariant,
+                    height: 1.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // â”€â”€ Actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           IconButton(
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Recherche — bientôt disponible')),
+                const SnackBar(content: Text('Recherche â€” bientÃ´t disponible')),
               );
             },
-            icon: const Icon(Icons.search, color: AppColors.dashPrimary),
-            tooltip: 'Rechercher',
-          ),
-          Expanded(
-            child: Text(
-              businessName,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: AppColors.dashPrimary,
-                letterSpacing: -0.3,
-              ),
-              overflow: TextOverflow.ellipsis,
+            icon: const Icon(
+              Icons.search_rounded,
+              color: AppColors.dashOnSurface,
+              size: 22,
             ),
+            tooltip: 'Rechercher',
           ),
           IconButton(
             onPressed: () => Navigator.of(context).push<void>(
               MaterialPageRoute(builder: (_) => const NotificationsScreen()),
             ),
-            icon: const Icon(Icons.notifications_outlined,
-                color: AppColors.dashPrimary),
+            icon: const Icon(
+              Icons.notifications_outlined,
+              color: AppColors.dashOnSurface,
+              size: 22,
+            ),
             tooltip: 'Notifications',
           ),
         ],
       ),
     );
-  }
+}
 }
 
 // ---------------------------------------------------------------------------
-// En-tête opérationnel
+// En-tÃªte opÃ©rationnel
 // ---------------------------------------------------------------------------
 
 class _OperationalHeader extends StatelessWidget {
@@ -451,26 +499,32 @@ class _OperationalHeader extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final stacked = constraints.maxWidth < 480;
+
         final title = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Vue d\'Ensemble Opérationnelle',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                color: AppColors.dashOnSurface,
-                letterSpacing: -0.4,
-                height: 1.25,
+            Text(
+              'Bonjour',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.dashOnSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              'Vue d\'ensemble',
+              style: AppTextStyles.h1.copyWith(
+                fontSize: 22,
+                letterSpacing: -0.5,
+                height: 1.15,
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              'Suivi de l\'inventaire et des tâches en temps réel.',
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.dashOnSurfaceVariant.withValues(alpha: 0.9),
-                height: 1.4,
+              'Inventaire & tâches en temps réel.',
+              style: AppTextStyles.body.copyWith(
+                fontSize: 13,
+                color: AppColors.dashOnSurfaceVariant,
               ),
             ),
           ],
@@ -482,20 +536,18 @@ class _OperationalHeader extends StatelessWidget {
           style: FilledButton.styleFrom(
             backgroundColor: AppColors.dashPrimary,
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(999),
             ),
-          ),
-          icon: const Icon(Icons.add, size: 18),
-          label: const Text(
-            'NOUVELLE ACTION',
-            style: TextStyle(
+            textStyle: const TextStyle(
               fontSize: 12,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.8,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.6,
             ),
           ),
+          icon: const Icon(Icons.add_rounded, size: 18),
+          label: const Text('Nouvelle action'),
         );
 
         if (stacked) {
@@ -514,9 +566,10 @@ class _OperationalHeader extends StatelessWidget {
           ],
         );
       },
-    );
+);
+    }
   }
-}
+
 
 // ---------------------------------------------------------------------------
 // Grille KPI (6 cartes)
@@ -526,7 +579,11 @@ class _KpiGrid extends StatelessWidget {
   final HomeDashboard dashboard;
   final ValueChanged<InventoryFocus> onFilterTap;
 
-  const _KpiGrid({super.key, required this.dashboard, required this.onFilterTap});
+  const _KpiGrid({
+    super.key,
+    required this.dashboard,
+    required this.onFilterTap,
+  });
 
   String _fmt(int n) {
     final s = n.toString();
@@ -562,7 +619,7 @@ class _KpiGrid extends StatelessWidget {
             value: _fmt(dashboard.disponibleCount),
             icon: Icons.check_circle,
             iconColor: AppColors.kpiGreen,
-            badgeLabel: 'Prêt',
+            badgeLabel: 'PrÃªt',
             badgeColor: AppColors.kpiGreen,
             onTap: () => onFilterTap(InventoryFocus.disponible),
           ),
@@ -571,7 +628,7 @@ class _KpiGrid extends StatelessWidget {
             value: _fmt(dashboard.enLocationCount),
             icon: Icons.local_shipping_outlined,
             iconColor: AppColors.kpiIndigo,
-            badgeLabel: 'Déployé',
+            badgeLabel: 'DÃ©ployÃ©',
             badgeColor: AppColors.kpiIndigo,
             onTap: () => onFilterTap(InventoryFocus.location),
           ),
@@ -652,81 +709,83 @@ class _KpiCard extends StatelessWidget {
     return Material(
       color: AppColors.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
         side: const BorderSide(color: AppColors.dashOutlineVariant),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
+        splashColor: iconColor.withValues(alpha: 0.06),
+        highlightColor: iconColor.withValues(alpha: 0.03),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // â”€â”€ IcÃ´ne dans un container colorÃ© â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
-                    child: Text(
-                      label.toUpperCase(),
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.6,
-                        color: AppColors.dashOnSurfaceVariant,
-                      ),
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: iconColor.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(10),
                     ),
+                    child: Icon(icon, color: iconColor, size: 20),
                   ),
-                  Icon(icon, color: iconColor, size: 22),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 12,
+                    color: AppColors.dashOutline,
+                  ),
                 ],
               ),
               const Spacer(),
+              // â”€â”€ Valeur numÃ©rique â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
               Text(
                 value,
                 style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
                   color: valueColor ?? AppColors.dashOnSurface,
-                  letterSpacing: -0.5,
+                  letterSpacing: -0.8,
+                  height: 1.0,
                 ),
               ),
-              if (badgeLabel != null && badgeColor != null) ...[
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: badgeColor!.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        badgeLabel!.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: badgeColor,
-                          letterSpacing: 0.4,
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    Icon(
-                      Icons.arrow_forward,
-                      size: 14,
-                      color: badgeColor!.withValues(alpha: 0.7),
-                    ),
-                  ],
+              const SizedBox(height: 2),
+              // â”€â”€ Label descriptif â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              Text(
+                label.toUpperCase(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.0,
+                  color: AppColors.dashOnSurfaceVariant,
+                  height: 1.2,
                 ),
-              ] else ...[
-                const SizedBox(height: 6),
-                const Align(
-                  alignment: Alignment.centerRight,
-                  child: Icon(
-                    Icons.arrow_forward,
-                    size: 14,
-                    color: AppColors.dashOutline,
+              ),
+              // â”€â”€ Badge de statut optionnel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              if (badgeLabel != null && badgeColor != null) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: badgeColor!.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    badgeLabel!.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      color: badgeColor,
+                      letterSpacing: 0.8,
+                    ),
                   ),
                 ),
               ],
@@ -734,13 +793,15 @@ class _KpiCard extends StatelessWidget {
           ),
         ),
       ),
-    );
+);
+    }
   }
-}
+
 
 // ---------------------------------------------------------------------------
-// Éléments partagés
+// Ã‰lÃ©ments partagÃ©s
 // ---------------------------------------------------------------------------
+
 
 class _LoadingOrError extends StatelessWidget {
   final bool loading;
@@ -864,3 +925,5 @@ class _QuickActionTile extends StatelessWidget {
     );
   }
 }
+
+

@@ -101,12 +101,8 @@ class ApiClient {
   /// Durée de fraîcheur d'un GET en cache (2 minutes par défaut).
   Duration defaultTtl = const Duration(minutes: 2);
 
-  /// Délai au-delà duquel une requête est considérée comme perdue.
-  ///
-  /// Sans plafond, un réseau qui « accepte » la connexion sans jamais répondre
-  /// (portail captif, opérateur saturé) fige l'interface indéfiniment. Mieux
-  /// vaut conclure à l'indisponibilité et basculer en mode hors ligne.
-  Duration timeout = const Duration(seconds: 20);
+  /// Délai au-delà duquel une requête est considérée comme perdue (45s pour supporter le cold start Render).
+  Duration timeout = const Duration(seconds: 45);
 
   /// Notifié à chaque requête aboutie ou perdue, pour que le service de
   /// connectivité tienne son état à jour sans sonder en permanence.

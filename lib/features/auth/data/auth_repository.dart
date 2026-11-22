@@ -116,7 +116,7 @@ class AuthRepository {
   /// fabriquer un compte local qui n'existe nulle part serait un mensonge que
   /// l'utilisateur decouvrirait au pire moment.
   void _requireNetwork(String action, String detail) {
-    if (_connectivity.isOffline) {
+    if (_connectivity.status == ConnectionStatus.offline) {
       throw OfflineUnsupportedException('$action\n\n$detail');
     }
   }
