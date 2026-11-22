@@ -86,7 +86,10 @@ class _LoginPageState extends State<LoginPage>
               e.code == GoogleSignInExceptionCode.interrupted)) {
         return;
       }
-      _showError('Connexion Google impossible. Veuillez réessayer.');
+      final detail = e is GoogleSignInException
+          ? (e.description ?? e.code.toString())
+          : e.toString();
+      _showError('Connexion Google impossible : $detail');
     }
   }
 
