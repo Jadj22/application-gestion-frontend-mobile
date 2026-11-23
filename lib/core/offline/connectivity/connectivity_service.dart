@@ -44,9 +44,9 @@ class ConnectivityService extends ChangeNotifier {
   /// pour repartir vite dès que le réseau revient.
   static const Duration offlinePollInterval = Duration(seconds: 20);
 
-  /// Une sonde qui traîne est une sonde qui échoue. 12s laisse le temps au backend
-  /// (y compris réveil Render) de répondre sans bloquer indéfiniment.
-  static const Duration probeTimeout = Duration(seconds: 12);
+  /// Une sonde qui traîne est une sonde qui échoue. 60s laisse le temps au backend
+  /// (y compris réveil Render lors d'un démarrage à froid) de répondre sans bloquer indéfiniment.
+  static const Duration probeTimeout = Duration(seconds: 60);
 
   final Connectivity _connectivity;
   final http.Client _client;
