@@ -8,6 +8,7 @@ class AppConfig {
   /// Surchargeable au lancement :
   /// `flutter run --dart-define=API_BASE_URL=http://10.0.0.2:8000/api`
   /// `flutter run --dart-define=API_BASE_URL=http://192.168.1.72:8000/api`
+  /// `flutter run --dart-define=API_BASE_URL=https://application-gestion-backend.onrender.com/api`
   /// `npx next dev -H 0.0.0.0 -p 3000`
   static const String _rawApiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',

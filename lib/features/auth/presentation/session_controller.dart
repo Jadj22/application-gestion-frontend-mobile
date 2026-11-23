@@ -193,13 +193,14 @@ class SessionController extends ChangeNotifier {
       notifyListeners();
       // Enregistrer le token push après connexion
       _registerPushToken();
-    } on NetworkUnavailableException {
+    } on NetworkUnavailableException catch (e) {
       try {
         await _loginOffline(email, password);
         notifyListeners();
       } on OfflineUnsupportedException {
-        throw const OfflineUnsupportedException(
-          'Impossible de joindre le serveur backend.\n\n'
+        final detail = e.cause != null ? '\n(${e.cause})' : '';
+        throw OfflineUnsupportedException(
+          'Impossible de joindre le serveur backend.$detail\n\n'
           'Vérifiez votre connexion ou patientez quelques secondes '
           '(le serveur distant est peut-être en cours de réveil).',
         );
@@ -265,9 +266,10 @@ class SessionController extends ChangeNotifier {
       notifyListeners();
       // Enregistrer le token push après inscription
       _registerPushToken();
-    } on NetworkUnavailableException {
-      throw const OfflineUnsupportedException(
-        'Impossible de joindre le serveur pour créer votre compte.\n\n'
+    } on NetworkUnavailableException catch (e) {
+      final detail = e.cause != null ? '\n(${e.cause})' : '';
+      throw OfflineUnsupportedException(
+        'Impossible de joindre le serveur pour créer votre compte.$detail\n\n'
         'Vérifiez votre connexion ou patientez quelques secondes '
         '(le serveur distant est peut-être en cours de réveil).',
       );
