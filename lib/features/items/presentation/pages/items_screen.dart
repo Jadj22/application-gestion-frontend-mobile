@@ -5,6 +5,8 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/widgets/app_bottom_nav.dart';
+import '../../../../shared/widgets/feedback/app_empty_state.dart';
+import '../../../../shared/widgets/feedback/app_error_view.dart';
 import '../../../../shared/widgets/skeleton/skeleton.dart';
 import '../../../../shared/widgets/sync_status_banner.dart';
 import '../../../auth/presentation/session_controller.dart';
@@ -357,7 +359,7 @@ class _ItemsScreenState extends State<ItemsScreen>
               child: _loading
                   ? _buildLoadingSkeleton()
                   : _error != null
-                      ? _LoadError(message: _error!, onRetry: _load)
+                      ? AppErrorView(message: _error!, onRetry: _load)
                       : TabBarView(
                           controller: _tabController,
                           children: [_buildCatalogTab(), _buildStockTab()],
@@ -546,9 +548,9 @@ class _ItemsScreenState extends State<ItemsScreen>
             onRefresh: _load,
             color: AppColors.dashSecondary,
             child: items.isEmpty
-                ? _emptyScrollable(_EmptyState(
+                ? _emptyScrollable(AppEmptyState(
                     icon: Icons.inventory_2_outlined,
-                    message: _query.isEmpty && _selectedCategoryId == null
+                    title: _query.isEmpty && _selectedCategoryId == null
                         ? 'Le catalogue est vide.'
                         : 'Aucun article ne correspond à votre recherche.',
                   ))
@@ -621,9 +623,9 @@ class _ItemsScreenState extends State<ItemsScreen>
             onRefresh: _load,
             color: AppColors.dashSecondary,
             child: items.isEmpty
-                ? _emptyScrollable(_EmptyState(
+                ? _emptyScrollable(AppEmptyState(
                     icon: Icons.query_stats,
-                    message: _query.isEmpty && _selectedStatus == null
+                    title: _query.isEmpty && _selectedStatus == null
                         ? 'Aucun article dans le stock.'
                         : 'Aucun article ne correspond à ce filtre.',
                   ))
@@ -1439,53 +1441,3 @@ class _Thumbnail extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// États : erreur / vide
-// ---------------------------------------------------------------------------
-
-class _LoadError extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _LoadError({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.cloud_off, size: 48, color: AppColors.dashOutline),
-          const SizedBox(height: 16),
-          Text(message, style: AppTextStyles.body, textAlign: TextAlign.center),
-          const SizedBox(height: 20),
-          OutlinedButton(onPressed: onRetry, child: const Text('Réessayer')),
-        ],
-      ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  final IconData icon;
-  final String message;
-
-  const _EmptyState({required this.icon, required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 48, color: AppColors.dashOutline),
-        const SizedBox(height: 12),
-        Text(
-          message,
-          style: AppTextStyles.body,
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-}

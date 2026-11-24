@@ -5,6 +5,8 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/widgets/app_bottom_nav.dart';
+import '../../../../shared/widgets/feedback/app_empty_state.dart';
+import '../../../../shared/widgets/feedback/app_error_view.dart';
 import '../../../../shared/widgets/skeleton/skeleton.dart';
 import '../../../auth/data/models/user.dart';
 import '../../../auth/presentation/session_controller.dart';
@@ -180,13 +182,17 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
       );
     }
     if (_error != null) {
-      return _LoadError(message: _error!, onRetry: _load);
+      return AppErrorView(message: _error!, onRetry: _load);
     }
     if (_reservations.isEmpty) {
       return _emptyScrollable(
-        _EmptyState(
-          statusFilter: _statusFilter,
-          onCreate: _openCreate,
+        AppEmptyState(
+          icon: Icons.event_available_outlined,
+          title: _statusFilter == null
+              ? 'Aucune réservation.'
+              : 'Aucune réservation dans cet état.',
+          actionLabel: _statusFilter == null ? 'Nouvelle réservation' : null,
+          onAction: _statusFilter == null ? _openCreate : null,
         ),
       );
     }
@@ -556,59 +562,3 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-class _EmptyState extends StatelessWidget {
-  final String? statusFilter;
-  final VoidCallback onCreate;
-
-  const _EmptyState({required this.statusFilter, required this.onCreate});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Icon(Icons.event_available_outlined,
-            size: 48, color: AppColors.dashOutline),
-        const SizedBox(height: 12),
-        Text(
-          statusFilter == null
-              ? 'Aucune réservation.'
-              : 'Aucune réservation dans cet état.',
-          style: AppTextStyles.body,
-          textAlign: TextAlign.center,
-        ),
-        if (statusFilter == null) ...[
-          const SizedBox(height: 16),
-          OutlinedButton(
-            onPressed: onCreate,
-            child: const Text('Nouvelle réservation'),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _LoadError extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _LoadError({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.cloud_off, size: 48, color: AppColors.dashOutline),
-          const SizedBox(height: 16),
-          Text(message, style: AppTextStyles.body, textAlign: TextAlign.center),
-          const SizedBox(height: 20),
-          OutlinedButton(onPressed: onRetry, child: const Text('Réessayer')),
-        ],
-      ),
-    );
-  }
-}
