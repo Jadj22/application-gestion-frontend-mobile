@@ -1,34 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/config.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
-import '../../../../shared/widgets/animated_entrance.dart';
 import '../../../../shared/widgets/app_bottom_nav.dart';
 import '../../../../shared/widgets/guide/guide_overlay.dart';
 import '../../../../shared/widgets/skeleton/skeleton.dart';
 import '../../../../shared/widgets/sync_status_banner.dart';
 import '../../../auth/presentation/session_controller.dart';
-import '../../../items/data/models/category.dart';
-import '../../../items/data/models/item.dart';
-import '../../../items/data/models/stock_movement.dart';
-import '../../../items/presentation/pages/add_item_page.dart';
 import '../../../items/presentation/pages/items_screen.dart';
-import '../../../items/presentation/pages/new_category_page.dart';
-import '../../../items/presentation/pages/stock_entry_page.dart';
 import '../../../maintenance/presentation/pages/maintenance_screen.dart';
-import '../../../reservations/presentation/pages/reservations_screen.dart';
 import '../../../notifications/presentation/pages/notifications_screen.dart';
+import '../../../reservations/data/models/reservation.dart';
+import '../../../reservations/data/reservations_repository.dart';
+import '../../../reservations/presentation/pages/reservation_page.dart';
+import '../../../reservations/presentation/pages/reservations_screen.dart';
 import '../../data/home_repository.dart';
+import '../widgets/availability_card.dart';
+import '../widgets/home_header.dart';
+import '../widgets/quick_actions.dart';
+import '../widgets/tasks_section.dart';
+import '../widgets/upcoming_reservations.dart';
 import 'actions_activity_page.dart';
 import 'more_page.dart';
-import '../widgets/actions_journal_widgets.dart';
 
-// ---------------------------------------------------------------------------
-// HomeScreen â€” maquette Stitch Â« JoÃ«l Events & DÃ©coration Â» (accuiel.html)
-// ---------------------------------------------------------------------------
-
+/// Accueil / Dashboard — refonte alignée sur la maquette Stitch « Test déco ».
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -43,12 +42,11 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _loading = true;
   String? _error;
   HomeDashboard? _dashboard;
+  List<ReservationModel> _reservations = [];
 
-  // Cibles du guide de dÃ©marrage (onglet Plus) sur les vrais widgets du
-  // dashboard â€” pas une maquette sÃ©parÃ©e.
-  final _topBarKey = GlobalKey();
-  final _kpiGridKey = GlobalKey();
-  final _newActionKey = GlobalKey();
+  final _headerKey = GlobalKey();
+  final _availabilityKey = GlobalKey();
+  final _quickActionsKey = GlobalKey();
   final _bottomNavKey = GlobalKey();
 
   @override
@@ -59,51 +57,70 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _startDashboardGuide() async {
     setState(() => _tabIndex = 0);
-    // Laisse le dashboard se reconstruire avant de mesurer les widgets.
     await Future.delayed(const Duration(milliseconds: 250));
     if (!mounted) return;
     await GuideOverlayController.start(context, [
       GuideStep(
-        targetKey: _topBarKey,
+        targetKey: _headerKey,
         title: 'Votre tableau de bord',
         description:
             'Le nom de votre business, la recherche et vos notifications.',
       ),
       GuideStep(
-        targetKey: _kpiGridKey,
-        title: 'Suivi du stock en un coup d\'Å“il',
+        targetKey: _availabilityKey,
+        title: 'Disponibilité en un coup d\'œil',
         description:
-            'Total, disponible, en location, entretien... Touchez une carte '
-            'pour filtrer l\'inventaire correspondant.',
+            'Stock disponible, en location, entretien et matériel abîmé. '
+            'Touchez un indicateur pour filtrer l\'inventaire.',
       ),
       GuideStep(
-        targetKey: _newActionKey,
-        title: 'Nouvelle action rapide',
+        targetKey: _quickActionsKey,
+        title: 'Actions rapides',
         description:
-            'Ajoutez un article, une entrÃ©e de stock ou une catÃ©gorie en '
-            'un instant.',
+            'Réservez, ouvrez le catalogue, l\'entretien ou votre vitrine.',
       ),
       GuideStep(
         targetKey: _bottomNavKey,
         title: 'Naviguez dans l\'app',
         description:
-            'Inventaire, Entretien, RÃ©servations et Plus sont toujours Ã  '
-            'portÃ©e de main.',
+            'Inventaire, Réservations, Entretien et Plus sont toujours à '
+            'portée de main.',
       ),
     ]);
   }
 
   Future<void> _load() async {
-    final businessId =
-        context.read<SessionController>().currentBusiness?.id;
-    if (businessId == null) return;
+    final session = context.read<SessionController>();
+    final homeRepo = context.read<HomeRepository>();
+    final reservationsRepo = context.read<ReservationsRepository>();
+    final businessId = session.currentBusiness?.id;
+    if (businessId == null) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = 'Aucune entreprise active n’est sélectionnée.';
+        });
+      }
+      return;
+    }
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
-      final data = await context.read<HomeRepository>().load(businessId);
-      if (mounted) setState(() => _dashboard = data);
+      final data = await homeRepo.load(businessId);
+      List<ReservationModel> resas = [];
+      try {
+        resas = await reservationsRepo.reservations(businessId);
+      } catch (_) {
+        // Réservations optionnelles pour les blocs À traiter / À venir.
+      }
+      if (mounted) {
+        setState(() {
+          _dashboard = data;
+          _reservations = resas;
+        });
+      }
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
     } finally {
@@ -118,6 +135,13 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _openTab(int index) {
+    setState(() {
+      if (index == 1) _inventoryFocus = null;
+      _tabIndex = index;
+    });
+  }
+
   void _openActionsPage({bool journal = false}) {
     Navigator.of(context).push<void>(
       MaterialPageRoute(
@@ -126,10 +150,193 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _openNewReservation() async {
+    final created = await Navigator.of(context).push<ReservationModel>(
+      MaterialPageRoute(builder: (_) => const ReservationPage()),
+    );
+    if (created != null && mounted) _load();
+  }
+
+  Future<void> _openReservation(ReservationModel reservation) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => ReservationPage(
+          isDetailMode: true,
+          reservationId: reservation.id,
+        ),
+      ),
+    );
+    if (mounted) _load();
+  }
+
+  Future<void> _openShowcase() async {
+    final slug = context.read<SessionController>().currentBusiness?.slug ?? '';
+    if (slug.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Aucun lien vitrine disponible.')),
+      );
+      return;
+    }
+    final url = '${AppConfig.webBaseUrl}/b/$slug';
+    try {
+      final launched = await launchUrl(
+        Uri.parse(url),
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Impossible d\'ouvrir la vitrine.')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur : $e')),
+        );
+      }
+    }
+  }
+
+  List<ReservationModel> get _upcoming {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final list = _reservations.where((r) {
+      if (r.estAnnulee || r.estTerminee) return false;
+      final date = r.dateDebut ?? r.livraisonPrevueLe;
+      if (date == null) return r.estValidee || r.estEnAttente || r.estEnCours;
+      final day = DateTime(date.year, date.month, date.day);
+      return !day.isBefore(today);
+    }).toList();
+    list.sort((a, b) {
+      final da = a.dateDebut ?? a.livraisonPrevueLe ?? DateTime(2100);
+      final db = b.dateDebut ?? b.livraisonPrevueLe ?? DateTime(2100);
+      return da.compareTo(db);
+    });
+    return list;
+  }
+
+  List<HomeTaskItem> _buildTasks(HomeDashboard dashboard) {
+    final tasks = <HomeTaskItem>[];
+    final pending = _reservations.where((r) => r.estEnAttente).toList()
+      ..sort((a, b) {
+        final da = a.dateDebut ?? DateTime(2100);
+        final db = b.dateDebut ?? DateTime(2100);
+        return da.compareTo(db);
+      });
+
+    for (final r in pending.take(2)) {
+      final date = r.dateDebut;
+      final subtitleParts = <String>[];
+      if (r.motif.trim().isNotEmpty) {
+        subtitleParts.add(r.motif.trim());
+      } else if (r.itemNom.isNotEmpty) {
+        subtitleParts.add(r.itemNom);
+      }
+      if (date != null) subtitleParts.add(_shortDate(date));
+      tasks.add(
+        HomeTaskItem(
+          id: 'resa-${r.id}',
+          kind: HomeTaskKind.reservation,
+          title: 'Réservation à valider',
+          subtitle: subtitleParts.isEmpty
+              ? 'En attente de confirmation'
+              : subtitleParts.join(' · '),
+          priority: 3,
+          onTap: () => _openReservation(r),
+        ),
+      );
+    }
+
+    if (dashboard.endommageCount > 0) {
+      HomeAlert? alert;
+      for (final a in dashboard.alerts) {
+        if (a.code.contains('DOMMAGE') || a.mode == 'BLOCAGE') {
+          alert = a;
+          break;
+        }
+      }
+      tasks.add(
+        HomeTaskItem(
+          id: 'damaged',
+          kind: HomeTaskKind.damaged,
+          title: dashboard.endommageCount == 1
+              ? '1 unité abîmée'
+              : '${dashboard.endommageCount} unités abîmées',
+          subtitle: alert != null && alert.itemNom.isNotEmpty
+              ? '${alert.itemNom} · à vérifier'
+              : 'Matériel à vérifier',
+          priority: 2,
+          onTap: () => _openInventory(InventoryFocus.endommage),
+        ),
+      );
+    }
+
+    if (dashboard.entretienCount > 0) {
+      HomeAlert? alert;
+      for (final a in dashboard.alerts) {
+        if (a.code.contains('ENTRETIEN') || a.code.contains('A_VERIFIER')) {
+          alert = a;
+          break;
+        }
+      }
+      tasks.add(
+        HomeTaskItem(
+          id: 'entretien',
+          kind: HomeTaskKind.maintenance,
+          title: 'Entretien en cours',
+          subtitle: alert != null && alert.itemNom.isNotEmpty
+              ? alert.itemNom
+              : '${dashboard.entretienCount} article${dashboard.entretienCount > 1 ? 's' : ''} concerné${dashboard.entretienCount > 1 ? 's' : ''}',
+          priority: 1,
+          onTap: () => _openTab(3),
+        ),
+      );
+    }
+
+    if (dashboard.aVerifierTotal > 0 &&
+        !tasks.any((t) => t.kind == HomeTaskKind.damaged)) {
+      tasks.add(
+        HomeTaskItem(
+          id: 'verifier',
+          kind: HomeTaskKind.other,
+          title: dashboard.aVerifierTotal == 1
+              ? 'Article à vérifier'
+              : '${dashboard.aVerifierTotal} articles à vérifier',
+          subtitle: dashboard.inventaireActif
+              ? 'Inventaire en cours'
+              : 'Contrôle qualité requis',
+          priority: 1,
+          onTap: () => _openInventory(InventoryFocus.verifier),
+        ),
+      );
+    }
+
+    tasks.sort((a, b) => b.priority.compareTo(a.priority));
+    return tasks.take(5).toList();
+  }
+
+  String _shortDate(DateTime date) {
+    const months = [
+      'jan.', 'fév.', 'mars', 'avr.', 'mai', 'juin',
+      'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.',
+    ];
+    return '${date.day} ${months[date.month - 1]}';
+  }
+
+  int get _pointsATraiter {
+    final d = _dashboard;
+    if (d == null) return 0;
+    return d.reservationsEnAttente +
+        (d.endommageCount > 0 ? 1 : 0) +
+        (d.entretienCount > 0 ? 1 : 0) +
+        (d.aVerifierTotal > 0 ? 1 : 0) +
+        d.conflitsReservation;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.dashSurfaceLow,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 250),
@@ -152,12 +359,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 showBottomNav: false,
                 focus: _inventoryFocus,
               ),
-            2 => const MaintenanceScreen(
-                key: ValueKey('tab-maintenance'),
+            2 => const ReservationsScreen(
+                key: ValueKey('tab-reservations'),
                 showBottomNav: false,
               ),
-            3 => const ReservationsScreen(
-                key: ValueKey('tab-reservations'),
+            3 => const MaintenanceScreen(
+                key: ValueKey('tab-maintenance'),
                 showBottomNav: false,
               ),
             _ => MorePage(
@@ -170,207 +377,53 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: AppBottomNav(
         key: _bottomNavKey,
         currentIndex: _tabIndex,
-        onTap: (index) {
-          setState(() {
-            if (index == 1) _inventoryFocus = null;
-            _tabIndex = index;
-          });
-        },
-      ),
-    );
-  }
-
-  Future<void> _openAddItem() async {
-    final canAdd = context.read<SessionController>().can('item.edit');
-    if (!canAdd) {
-      _showPermissionDenied('gÃ©rer les articles');
-      return;
-    }
-    final created = await Navigator.of(context).push<ItemModel>(
-      MaterialPageRoute(builder: (_) => const AddItemPage()),
-    );
-    if (created != null && mounted) {
-      _load();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Â« ${created.nom} Â» a Ã©tÃ© ajoutÃ© au catalogue.')),
-      );
-    }
-  }
-
-  Future<void> _openStockEntry() async {
-    final canMove = context.read<SessionController>().can('stock.mouvement');
-    if (!canMove) {
-      _showPermissionDenied('gÃ©rer le stock');
-      return;
-    }
-    final movement = await Navigator.of(context).push<StockMovementModel>(
-      MaterialPageRoute(builder: (_) => const StockEntryPage()),
-    );
-    if (movement != null && mounted) {
-      _load();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '+${movement.quantite} Â« ${movement.itemNom} Â» ajoutÃ© au stock.',
-          ),
-        ),
-      );
-    }
-  }
-
-  Future<void> _openNewCategory() async {
-    final canManage = context.read<SessionController>().can('catalog.manage');
-    if (!canManage) {
-      _showPermissionDenied('gÃ©rer le catalogue');
-      return;
-    }
-    final category = await Navigator.of(context).push<CategoryModel>(
-      MaterialPageRoute(builder: (_) => const NewCategoryPage()),
-    );
-    if (category != null && mounted) {
-      _load();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('La catÃ©gorie Â« ${category.nom} Â» a Ã©tÃ© crÃ©Ã©e.'),
-        ),
-      );
-    }
-  }
-
-  void _showPermissionDenied(String action) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Vous n\'avez pas la permission de $action.')),
-    );
-  }
-
-  void _showQuickActions() {
-    showModalBottomSheet<void>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Nouvelle action', style: AppTextStyles.h2),
-              const SizedBox(height: 16),
-              _QuickActionTile(
-                icon: Icons.add_box_outlined,
-                label: 'Ajouter un article',
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  _openAddItem();
-                },
-              ),
-              _QuickActionTile(
-                icon: Icons.add_circle_outline,
-                label: 'Nouvelle entre de stock',
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  _openStockEntry();
-                },
-              ),
-              _QuickActionTile(
-                icon: Icons.category_outlined,
-                label: 'Nouvelle catégorie',
-                onTap: () {
-                  Navigator.of(sheetContext).pop();
-                  _openNewCategory();
-                },
-              ),
-            ],
-          ),
-        ),
+        onTap: _openTab,
       ),
     );
   }
 
   Widget _buildDashboard() {
-    final businessName =
-        context.watch<SessionController>().currentBusiness?.nom ??
-            'JoÃ«l Events & DÃ©coration';
+    final session = context.watch<SessionController>();
+    final businessName = session.currentBusiness?.nom ?? 'Mon espace';
+    final userName = session.user?.firstName.isNotEmpty == true
+        ? session.user!.firstName
+        : (session.user?.displayName.split(' ').first ?? '');
 
     return Column(
       children: [
-        _DashboardTopBar(key: _topBarKey, businessName: businessName),
+        HomeHeader(
+          key: _headerKey,
+          businessName: businessName,
+          userName: userName,
+          onSearch: () => _openInventory(InventoryFocus.total),
+          onNotifications: () => Navigator.of(context).push<void>(
+            MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+          ),
+        ),
         const SyncStatusBanner(),
+        if (_error != null && _dashboard != null)
+          _HomeRefreshError(message: _error!, onRetry: _load),
         Expanded(
           child: RefreshIndicator(
             onRefresh: _load,
-            color: AppColors.dashSecondary,
+            color: AppColors.primary,
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _OperationalHeader(
-                    onNewAction: _showQuickActions,
-                    actionButtonKey: _newActionKey,
-                  ),
-                  const SizedBox(height: 24),
-                  if (_dashboard == null)
-                    _LoadingOrError(
-                      loading: _loading,
-                      error: _error,
-                      onRetry: _load,
-                    )
-                  else ...[
-                    _KpiGrid(
-                      key: _kpiGridKey,
-                      dashboard: _dashboard!,
-                      onFilterTap: _openInventory,
-                    ),
-                    const SizedBox(height: 24),
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final wide = constraints.maxWidth >= 720;
-                        if (wide) {
-                          return Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: ActionsTodoList(
-                                  actions: _dashboard!.actions,
-                                  maxItems: 6,
-                                  onSeeAll: () => _openActionsPage(),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: ActivityJournalList(
-                                  activities: _dashboard!.activities,
-                                  maxItems: 6,
-                                  onSeeAll: () => _openActionsPage(journal: true),
-                                ),
-                              ),
-                            ],
-                          );
-                        }
-                        return Column(
-                          children: [
-                            ActionsTodoList(
-                              actions: _dashboard!.actions,
-                              maxItems: 6,
-                              onSeeAll: () => _openActionsPage(),
-                            ),
-                            const SizedBox(height: 24),
-                            ActivityJournalList(
-                              activities: _dashboard!.activities,
-                              maxItems: 6,
-                              onSeeAll: () => _openActionsPage(journal: true),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ],
-                ],
+              padding: const EdgeInsets.only(bottom: 32),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560),
+                  child: _loading && _dashboard == null
+                      ? const _HomeLoadingSkeleton()
+                      : _error != null && _dashboard == null
+                          ? _HomeError(
+                              message: _error!,
+                              onRetry: session.currentBusiness == null
+                                  ? null
+                                  : _load,
+                            )
+                          : _buildDashboardContent(),
+                ),
               ),
             ),
           ),
@@ -379,574 +432,160 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-}
+  Widget _buildDashboardContent() {
+    final dashboard = _dashboard!;
+    final tasks = _buildTasks(dashboard);
+    final upcoming = _upcoming;
 
-// ---------------------------------------------------------------------------
-// Top App Bar
-// ---------------------------------------------------------------------------
-
-class _DashboardTopBar extends StatelessWidget {
-  final String businessName;
-
-  const _DashboardTopBar({super.key, required this.businessName});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 68,
-      decoration: const BoxDecoration(
-        color: AppColors.dashSurface,
-        border: Border(
-          bottom: BorderSide(color: AppColors.dashOutlineVariant, width: 1),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 8),
+        AvailabilityCard(
+          key: _availabilityKey,
+          totalStock: dashboard.totalStock,
+          disponibleCount: dashboard.disponibleCount,
+          enLocationCount: dashboard.enLocationCount,
+          entretienCount: dashboard.entretienCount,
+          endommageCount: dashboard.endommageCount,
+          pointsATraiter: _pointsATraiter,
+          onDisponibleTap: () => _openInventory(InventoryFocus.disponible),
+          onLocationTap: () => _openInventory(InventoryFocus.location),
+          onEntretienTap: () => _openInventory(InventoryFocus.entretien),
+          onEndommageTap: () => _openInventory(InventoryFocus.endommage),
         ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          // â”€â”€ Logo badge D â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: AppColors.dashPrimary,
-              borderRadius: BorderRadius.circular(9),
-            ),
-            child: const Center(
-              child: Text(
-                'D',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  fontFamily: 'Georgia',
-                  height: 1.0,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          // â”€â”€ Nom du business â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  businessName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.dashOnSurface,
-                    letterSpacing: -0.3,
-                    height: 1.1,
-                  ),
-                ),
-                const Text(
-                  'Tableau de bord',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.dashOnSurfaceVariant,
-                    height: 1.2,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // â”€â”€ Actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          IconButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Recherche â€” bientÃ´t disponible')),
-              );
-            },
-            icon: const Icon(
-              Icons.search_rounded,
-              color: AppColors.dashOnSurface,
-              size: 22,
-            ),
-            tooltip: 'Rechercher',
-          ),
-          IconButton(
-            onPressed: () => Navigator.of(context).push<void>(
-              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
-            ),
-            icon: const Icon(
-              Icons.notifications_outlined,
-              color: AppColors.dashOnSurface,
-              size: 22,
-            ),
-            tooltip: 'Notifications',
-          ),
-        ],
-      ),
-    );
-}
-}
-
-// ---------------------------------------------------------------------------
-// En-tÃªte opÃ©rationnel
-// ---------------------------------------------------------------------------
-
-class _OperationalHeader extends StatelessWidget {
-  final VoidCallback onNewAction;
-  final Key? actionButtonKey;
-
-  const _OperationalHeader({required this.onNewAction, this.actionButtonKey});
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final stacked = constraints.maxWidth < 480;
-
-        final title = Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Bonjour',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.dashOnSurfaceVariant,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              'Vue d\'ensemble',
-              style: AppTextStyles.h1.copyWith(
-                fontSize: 22,
-                letterSpacing: -0.5,
-                height: 1.15,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Inventaire & tâches en temps réel.',
-              style: AppTextStyles.body.copyWith(
-                fontSize: 13,
-                color: AppColors.dashOnSurfaceVariant,
-              ),
-            ),
-          ],
-        );
-
-        final actionBtn = FilledButton.icon(
-          key: actionButtonKey,
-          onPressed: onNewAction,
-          style: FilledButton.styleFrom(
-            backgroundColor: AppColors.dashPrimary,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(999),
-            ),
-            textStyle: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.6,
-            ),
-          ),
-          icon: const Icon(Icons.add_rounded, size: 18),
-          label: const Text('Nouvelle action'),
-        );
-
-        if (stacked) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [title, const SizedBox(height: 16), actionBtn],
-          );
-        }
-
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(child: title),
-            const SizedBox(width: 16),
-            actionBtn,
-          ],
-        );
-      },
-);
-    }
-  }
-
-
-// ---------------------------------------------------------------------------
-// Grille KPI (6 cartes)
-// ---------------------------------------------------------------------------
-
-class _KpiGrid extends StatelessWidget {
-  final HomeDashboard dashboard;
-  final ValueChanged<InventoryFocus> onFilterTap;
-
-  const _KpiGrid({
-    super.key,
-    required this.dashboard,
-    required this.onFilterTap,
-  });
-
-  String _fmt(int n) {
-    final s = n.toString();
-    if (s.length <= 3) return s;
-    final buf = StringBuffer();
-    for (var i = 0; i < s.length; i++) {
-      if (i > 0 && (s.length - i) % 3 == 0) buf.write(',');
-      buf.write(s[i]);
-    }
-    return buf.toString();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final cols = constraints.maxWidth >= 900
-            ? 3
-            : constraints.maxWidth >= 600
-                ? 3
-                : 2;
-
-        final cards = [
-          _KpiCard(
-            label: 'Total',
-            value: _fmt(dashboard.totalStock),
-            icon: Icons.inventory_2_outlined,
-            iconColor: AppColors.dashOutline,
-            onTap: () => onFilterTap(InventoryFocus.total),
-          ),
-          _KpiCard(
-            label: 'Disponible',
-            value: _fmt(dashboard.disponibleCount),
-            icon: Icons.check_circle,
-            iconColor: AppColors.kpiGreen,
-            badgeLabel: 'PrÃªt',
-            badgeColor: AppColors.kpiGreen,
-            onTap: () => onFilterTap(InventoryFocus.disponible),
-          ),
-          _KpiCard(
-            label: 'En Location',
-            value: _fmt(dashboard.enLocationCount),
-            icon: Icons.local_shipping_outlined,
-            iconColor: AppColors.kpiIndigo,
-            badgeLabel: 'DÃ©ployÃ©',
-            badgeColor: AppColors.kpiIndigo,
-            onTap: () => onFilterTap(InventoryFocus.location),
-          ),
-          _KpiCard(
-            label: 'Entretien',
-            value: _fmt(dashboard.entretienCount),
-            icon: Icons.build_outlined,
-            iconColor: AppColors.kpiAmber,
-            badgeLabel: 'En Réparation',
-            badgeColor: AppColors.kpiAmber,
-            onTap: () => onFilterTap(InventoryFocus.entretien),
-          ),
-          _KpiCard(
-            label: 'Endommagé',
-            value: _fmt(dashboard.endommageCount),
-            icon: Icons.warning_amber_rounded,
-            iconColor: AppColors.kpiRose,
-            badgeLabel: 'Action Req',
-            badgeColor: AppColors.kpiRose,
-            valueColor: AppColors.kpiRose,
-            onTap: () => onFilterTap(InventoryFocus.endommage),
-          ),
-          _KpiCard(
-            label: 'À Vérifier',
-            value: _fmt(dashboard.aVerifierTotal),
-            icon: Icons.fact_check_outlined,
-            iconColor: AppColors.kpiBlue,
-            badgeLabel: 'En Attente',
-            badgeColor: AppColors.kpiBlue,
-            onTap: () => onFilterTap(InventoryFocus.verifier),
-          ),
-        ];
-
-        // Ratio adaptatif : les écrans mobiles (<600) ont besoin d'assez de hauteur
-        // pour loger l'icône, la valeur, le label et le badge sans overflow.
-        final double ratio = cols == 2
-            ? (constraints.maxWidth < 360 ? 1.05 : 1.15)
-            : 1.4;
-
-        return GridView.count(
-          crossAxisCount: cols,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 8,
-          crossAxisSpacing: 8,
-          childAspectRatio: ratio,
-          children: [
-            for (var i = 0; i < cards.length; i++)
-              AnimatedEntrance(
-                delay: Duration(milliseconds: 60 * i),
-                duration: const Duration(milliseconds: 400),
-                child: cards[i],
-              ),
-          ],
-        );
-      },
+        QuickActions(
+          key: _quickActionsKey,
+          onReserve: _openNewReservation,
+          onArticle: () => _openInventory(InventoryFocus.total),
+          onMaintenance: () => _openTab(3),
+          onShowcase: _openShowcase,
+        ),
+        TasksSection(
+          tasks: tasks,
+          badgeCount: _pointsATraiter,
+          onSeeAll: () => _openActionsPage(),
+        ),
+        UpcomingReservations(
+          reservations: upcoming,
+          onSeeAll: () => _openTab(2),
+          onTapReservation: _openReservation,
+        ),
+      ],
     );
   }
 }
 
-class _KpiCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color iconColor;
-  final String? badgeLabel;
-  final Color? badgeColor;
-  final Color? valueColor;
-  final VoidCallback onTap;
-
-  const _KpiCard({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.iconColor,
-    required this.onTap,
-    this.badgeLabel,
-    this.badgeColor,
-    this.valueColor,
-  });
+class _HomeLoadingSkeleton extends StatelessWidget {
+  const _HomeLoadingSkeleton();
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.dashOutlineVariant),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        splashColor: iconColor.withValues(alpha: 0.06),
-        highlightColor: iconColor.withValues(alpha: 0.03),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // ── Icône dans un container coloré ──────────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: iconColor.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(9),
-                    ),
-                    child: Icon(icon, color: iconColor, size: 18),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 11,
-                    color: AppColors.dashOutline,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              // ── Valeur numérique, label & badge ─────────────────────────
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
+    return Skeleton(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+        child: Column(
+          children: [
+            const SkeletonCard(
+              radius: 20,
+              child: SizedBox(height: 160, width: double.infinity),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: List.generate(
+                4,
+                (_) => const Column(
                   children: [
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        value,
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: valueColor ?? AppColors.dashOnSurface,
-                          letterSpacing: -0.8,
-                          height: 1.0,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      label.toUpperCase(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.8,
-                        color: AppColors.dashOnSurfaceVariant,
-                        height: 1.2,
-                      ),
-                    ),
-                    if (badgeLabel != null && badgeColor != null) ...[
-                      const SizedBox(height: 5),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 7, vertical: 2.5),
-                          decoration: BoxDecoration(
-                            color: badgeColor!.withValues(alpha: 0.10),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            badgeLabel!.toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 8.5,
-                              fontWeight: FontWeight.w700,
-                              color: badgeColor,
-                              letterSpacing: 0.7,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    SkeletonCircle(size: 56),
+                    SizedBox(height: 8),
+                    SkeletonText(width: 48, height: 10),
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-
-// ---------------------------------------------------------------------------
-// Ã‰lÃ©ments partagÃ©s
-// ---------------------------------------------------------------------------
-
-
-class _LoadingOrError extends StatelessWidget {
-  final bool loading;
-  final String? error;
-  final VoidCallback onRetry;
-
-  const _LoadingOrError({
-    required this.loading,
-    required this.error,
-    required this.onRetry,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (loading) {
-      return Skeleton(
-        child: Column(
-          children: [
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 1.35,
-              children: List.generate(
-                4,
-                (_) => const SkeletonCard(
-                  radius: 12,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SkeletonCircle(size: 22),
-                      Spacer(),
-                      SkeletonText(width: 60, height: 22),
-                    ],
-                  ),
-                ),
-              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
+            const SkeletonCard(child: SkeletonListItem()),
+            const SizedBox(height: 8),
             const SkeletonCard(child: SkeletonListItem()),
             const SizedBox(height: 8),
             const SkeletonCard(child: SkeletonListItem()),
           ],
         ),
-      );
-    }
+      ),
+    );
+  }
+}
+
+class _HomeError extends StatelessWidget {
+  final String message;
+  final VoidCallback? onRetry;
+
+  const _HomeError({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
       child: Column(
         children: [
           const Icon(Icons.cloud_off, size: 40, color: AppColors.dashOutline),
           const SizedBox(height: 12),
           Text(
-            error ?? 'Impossible de charger les données.',
+            message,
             style: AppTextStyles.body,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          OutlinedButton(onPressed: onRetry, child: const Text('Réessayer')),
+          if (onRetry != null)
+            OutlinedButton(
+              onPressed: onRetry,
+              child: const Text('Réessayer'),
+            ),
         ],
       ),
     );
   }
 }
 
-class _QuickActionTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
+class _HomeRefreshError extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
 
-  const _QuickActionTile({
-    required this.icon,
-    required this.label,
-    required this.onTap,
+  const _HomeRefreshError({
+    required this.message,
+    required this.onRetry,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Material(
-        color: AppColors.dashSurfaceLow,
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.dashOutlineVariant),
-                  ),
-                  child: Icon(icon, size: 20, color: AppColors.dashPrimary),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.dashOnSurface,
-                    ),
-                  ),
-                ),
-                const Icon(Icons.chevron_right,
-                    size: 18, color: AppColors.dashOutline),
-              ],
+    return Material(
+      color: AppColors.warningBg,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.cloud_off_outlined,
+              color: AppColors.warningText,
+              size: 20,
             ),
-          ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Actualisation impossible : $message',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: onRetry,
+              child: const Text('Réessayer'),
+            ),
+          ],
         ),
       ),
     );
   }
 }
-
-

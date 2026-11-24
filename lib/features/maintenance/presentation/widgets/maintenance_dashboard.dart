@@ -1,88 +1,135 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../items/data/models/catalog_item.dart';
 import '../../data/models/maintenance_task.dart';
 
 /// Dashboard de maintenance avec statistiques et indicateurs.
 class MaintenanceDashboard extends StatelessWidget {
   final List<MaintenanceTaskModel> tasks;
+  final List<CatalogItemModel> catalogItems;
+  final String? catalogError;
   final VoidCallback? onNewTask;
   final VoidCallback? onBulkTask;
   final ValueChanged<MaintenanceTaskModel>? onTaskTap;
+  final ValueChanged<CatalogItemModel>? onPlanItem;
 
   const MaintenanceDashboard({
     super.key,
     required this.tasks,
+    required this.catalogItems,
+    this.catalogError,
     this.onNewTask,
     this.onBulkTask,
     this.onTaskTap,
+    this.onPlanItem,
   });
 
   @override
   Widget build(BuildContext context) {
-    final enCours = tasks.where((t) => t.estEnCours).toList();
+    final enCours = tasks.where((t) => t.statut == 'EN_COURS').toList();
     final terminees = tasks.where((t) => t.estTerminee).toList();
     final partielles = tasks.where((t) => t.statut == 'PARTIELLE').toList();
+    final planifiees = tasks.where((t) => t.statut == 'A_FAIRE').toList();
+    final itemsWithTasks = tasks
+        .where((task) => !task.estTerminee)
+        .map((task) => task.itemId)
+        .toSet();
+    final aPlanifier = catalogItems
+        .where(
+          (item) =>
+              (item.entretienRequis || item.endommages > 0) &&
+              !itemsWithTasks.contains(item.id),
+        )
+        .toList();
 
-    // Calculer les statistiques
     final totalEnCours = enCours.length;
     final totalTerminees = terminees.length;
     final totalPartielles = partielles.length;
 
-    // Taches urgentes (en cours depuis longtemps ou avec beaucoup d'etapes restantes)
     final urgentes = enCours.where((t) {
-      final progress = t.etapesFaites / (t.etapesTotal == 0 ? 1 : t.etapesTotal);
+      final progress =
+          t.etapesFaites / (t.etapesTotal == 0 ? 1 : t.etapesTotal);
       return progress < 0.3 && t.etapesTotal > 0;
     }).toList();
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // KPI Cards
           _buildKpiSection(
             totalEnCours: totalEnCours,
             totalTerminees: totalTerminees,
             totalPartielles: totalPartielles,
-            urgentes: urgentes.length,
           ),
+          if (catalogError != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.warning,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'Articles à planifier indisponibles : $catalogError',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.warningText,
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 24),
 
-          const SizedBox(height: 20),
-
-          // Actions rapides
-          _buildQuickActions(),
-
-          const SizedBox(height: 20),
-
-          // Taches urgentes
           if (urgentes.isNotEmpty) ...[
             _buildUrgentSection(urgentes),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
           ],
 
-          // Taches en cours
           if (enCours.isNotEmpty) ...[
             _buildTaskSection(
               'En cours',
               enCours.take(5).toList(),
               AppColors.kpiAmber,
-              Icons.pending_actions,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
           ],
 
-          // Recemment terminees
+          if (partielles.isNotEmpty) ...[
+            _buildTaskSection(
+              'Partielles',
+              partielles.take(5).toList(),
+              AppColors.kpiAmber,
+            ),
+            const SizedBox(height: 24),
+          ],
+
+          if (planifiees.isNotEmpty) ...[
+            _buildTaskSection(
+              'Planifiées',
+              planifiees.take(5).toList(),
+              AppColors.dashPrimary,
+            ),
+            const SizedBox(height: 24),
+          ],
+
+          if (aPlanifier.isNotEmpty) ...[
+            _buildPlanningSection(aPlanifier),
+            const SizedBox(height: 24),
+          ],
+
           if (terminees.isNotEmpty) ...[
             _buildTaskSection(
               'Récemment terminées',
               terminees.take(3).toList(),
               AppColors.kpiGreen,
-              Icons.check_circle_outline,
             ),
+            const SizedBox(height: 24),
           ],
 
-          const SizedBox(height: 20),
+          _buildQuickActions(),
         ],
       ),
     );
@@ -92,7 +139,6 @@ class MaintenanceDashboard extends StatelessWidget {
     required int totalEnCours,
     required int totalTerminees,
     required int totalPartielles,
-    required int urgentes,
   }) {
     return Row(
       children: [
@@ -101,7 +147,6 @@ class MaintenanceDashboard extends StatelessWidget {
             label: 'En cours',
             value: '$totalEnCours',
             color: AppColors.kpiAmber,
-            icon: Icons.pending_actions,
           ),
         ),
         const SizedBox(width: 12),
@@ -110,7 +155,6 @@ class MaintenanceDashboard extends StatelessWidget {
             label: 'Terminées',
             value: '$totalTerminees',
             color: AppColors.kpiGreen,
-            icon: Icons.check_circle,
           ),
         ),
         const SizedBox(width: 12),
@@ -119,8 +163,6 @@ class MaintenanceDashboard extends StatelessWidget {
             label: 'Partielles',
             value: '$totalPartielles',
             color: AppColors.kpiBlue,
-            icon: Icons.warning_amber,
-            warning: totalPartielles > 0,
           ),
         ),
       ],
@@ -128,53 +170,46 @@ class MaintenanceDashboard extends StatelessWidget {
   }
 
   Widget _buildQuickActions() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.flash_on, size: 18, color: AppColors.primary),
-              SizedBox(width: 6),
-              Text(
-                'Actions rapides',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
+    return Row(
+      children: [
+        Expanded(
+          child: _QuickActionButton(label: 'Nouvelle tâche', onTap: onNewTask),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _QuickActionButton(
+            label: 'Tâches en lot',
+            outlined: true,
+            onTap: onBulkTask,
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _QuickActionButton(
-                  icon: Icons.add_task,
-                  label: 'Nouvelle tâche',
-                  onTap: onNewTask,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _QuickActionButton(
-                  icon: Icons.playlist_add,
-                  label: 'Tâches en lot',
-                  color: AppColors.kpiAmber,
-                  onTap: onBulkTask,
-                ),
-              ),
-            ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPlanningSection(List<CatalogItemModel> items) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'À planifier',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 10),
+        ...items.map(
+          (item) => Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _PlanningItemCard(
+              item: item,
+              onTap: () => onPlanItem?.call(item),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -184,9 +219,7 @@ class MaintenanceDashboard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.dangerText.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.dangerText.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: AppColors.dangerText.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -233,13 +266,17 @@ class MaintenanceDashboard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          ...urgentes.take(3).map((task) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: _UrgentTaskTile(
-                  task: task,
-                  onTap: () => onTaskTap?.call(task),
+          ...urgentes
+              .take(3)
+              .map(
+                (task) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _UrgentTaskTile(
+                    task: task,
+                    onTap: () => onTaskTap?.call(task),
+                  ),
                 ),
-              )),
+              ),
         ],
       ),
     );
@@ -249,43 +286,29 @@ class MaintenanceDashboard extends StatelessWidget {
     String title,
     List<MaintenanceTaskModel> tasks,
     Color color,
-    IconData icon,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(icon, size: 18, color: color),
-            const SizedBox(width: 6),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              '${tasks.length}',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
-            ),
-          ],
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
         ),
         const SizedBox(height: 10),
-        ...tasks.map((task) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: _TaskMiniCard(
-                task: task,
-                color: color,
-                onTap: () => onTaskTap?.call(task),
-              ),
-            )),
+        ...tasks.map(
+          (task) => Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _TaskMiniCard(
+              task: task,
+              color: color,
+              onTap: () => onTaskTap?.call(task),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -295,62 +318,54 @@ class _KpiCard extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
-  final IconData icon;
-  final bool warning;
 
   const _KpiCard({
     required this.label,
     required this.value,
     required this.color,
-    required this.icon,
-    this.warning = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(14),
-        border: warning
-            ? Border.all(color: color.withValues(alpha: 0.5), width: 2)
-            : null,
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 16, color: color),
-              if (warning) ...[
-                const Spacer(),
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
+              Container(
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
                   ),
                 ),
-              ],
+              ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: color,
-            ),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: color.withValues(alpha: 0.8),
+            style: const TextStyle(
+              fontSize: 28,
+              height: 1,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
             ),
           ),
         ],
@@ -360,45 +375,115 @@ class _KpiCard extends StatelessWidget {
 }
 
 class _QuickActionButton extends StatelessWidget {
-  final IconData icon;
   final String label;
-  final Color? color;
+  final bool outlined;
   final VoidCallback? onTap;
 
   const _QuickActionButton({
-    required this.icon,
     required this.label,
-    this.color,
+    this.outlined = false,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final c = color ?? AppColors.primary;
     return Material(
-      color: c.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(12),
+      color: outlined ? AppColors.surface : AppColors.primary,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(
+          color: outlined ? AppColors.primary : AppColors.primary,
+        ),
+      ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
+        child: SizedBox(
+          height: 48,
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: outlined ? AppColors.primary : AppColors.surface,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PlanningItemCard extends StatelessWidget {
+  final CatalogItemModel item;
+  final VoidCallback? onTap;
+
+  const _PlanningItemCard({required this.item, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final damaged = item.endommages;
+    final detail = damaged > 0
+        ? '$damaged abîmée${damaged > 1 ? 's' : ''} · aucune tâche'
+        : 'Entretien requis · aucune tâche';
+
+    return Material(
+      color: AppColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: const BorderSide(color: AppColors.border),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 18, color: c),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: c,
-                  ),
-                  overflow: TextOverflow.ellipsis,
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.dangerBg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.warning_amber_rounded,
+                  size: 20,
+                  color: AppColors.dangerText,
                 ),
               ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.nom,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      detail,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              TextButton(onPressed: onTap, child: const Text('Planifier')),
             ],
           ),
         ),
@@ -462,8 +547,12 @@ class _UrgentTaskTile extends StatelessWidget {
                     CircularProgressIndicator(
                       value: progress,
                       strokeWidth: 3,
-                      backgroundColor: AppColors.dangerText.withValues(alpha: 0.2),
-                      valueColor: const AlwaysStoppedAnimation(AppColors.dangerText),
+                      backgroundColor: AppColors.dangerText.withValues(
+                        alpha: 0.2,
+                      ),
+                      valueColor: const AlwaysStoppedAnimation(
+                        AppColors.dangerText,
+                      ),
                     ),
                     Text(
                       '${(progress * 100).round()}%',
@@ -489,97 +578,135 @@ class _TaskMiniCard extends StatelessWidget {
   final Color color;
   final VoidCallback? onTap;
 
-  const _TaskMiniCard({
-    required this.task,
-    required this.color,
-    this.onTap,
-  });
+  const _TaskMiniCard({required this.task, required this.color, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final progress = task.etapesTotal == 0
-        ? 0.0
-        : task.etapesFaites / task.etapesTotal;
+    final progress = (task.progressValue / 100).clamp(0.0, 1.0);
+    final statusLabel = task.statut == 'A_FAIRE'
+        ? 'PLANIFIÉE'
+        : task.statutLabel;
+    final description = [
+      task.procedureNom,
+      if (task.motif.isNotEmpty) task.motif,
+    ].where((part) => part.isNotEmpty).join(' · ');
     return Material(
       color: AppColors.surface,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(18),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(18),
         child: Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(color: AppColors.border),
           ),
-          child: Row(
+          child: Column(
             children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.build_outlined,
-                  size: 18,
-                  color: color,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      task.itemNom,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+              Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0EADF),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    Row(
+                    child: const Icon(
+                      Icons.image_outlined,
+                      size: 23,
+                      color: AppColors.hint,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          task.procedureNom,
+                          task.itemNom,
                           style: const TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textSecondary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        if (task.etapesTotal > 0) ...[
-                          const Text(' • ', style: TextStyle(color: AppColors.hint)),
+                        if (description.isNotEmpty)
                           Text(
-                            '${task.etapesFaites}/${task.etapesTotal}',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: color,
+                            description,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
                       ],
                     ),
-                  ],
-                ),
-              ),
-              if (task.etapesTotal > 0) ...[
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 32,
-                  height: 32,
-                  child: CircularProgressIndicator(
-                    value: progress,
-                    strokeWidth: 3,
-                    backgroundColor: color.withValues(alpha: 0.2),
-                    valueColor: AlwaysStoppedAnimation(color),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          statusLabel,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: color,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(999),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 6,
+                        backgroundColor: AppColors.inputBackground,
+                        valueColor: AlwaysStoppedAnimation(color),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    '${(progress * 100).round()} %',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

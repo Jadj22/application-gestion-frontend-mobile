@@ -72,8 +72,8 @@ class _ItemsScreenState extends State<ItemsScreen>
     (null, 'Tous'),
     ('disponible', 'Disponible'),
     ('location', 'En location'),
-    ('entretien', 'Entretien'),
-    ('endommage', 'Endommagé'),
+    ('entretien', 'En entretien'),
+    ('endommage', 'Abîmés'),
     ('verifier', 'À vérifier'),
     ('epuise', 'Épuisé'),
     ('inactif', 'Inactif'),
@@ -142,36 +142,42 @@ class _ItemsScreenState extends State<ItemsScreen>
 
   List<CatalogItemModel> _sorted(Iterable<CatalogItemModel> source) {
     final list = source.toList();
-    list.sort((a, b) => _sortAsc
-        ? a.nom.toLowerCase().compareTo(b.nom.toLowerCase())
-        : b.nom.toLowerCase().compareTo(a.nom.toLowerCase()));
+    list.sort(
+      (a, b) => _sortAsc
+          ? a.nom.toLowerCase().compareTo(b.nom.toLowerCase())
+          : b.nom.toLowerCase().compareTo(a.nom.toLowerCase()),
+    );
     return list;
   }
 
   /// Catalogue : filtre par catégorie + recherche.
   List<CatalogItemModel> get _filteredCatalog {
     final query = _query.trim().toLowerCase();
-    return _sorted(_items.where((item) {
-      if (_selectedCategoryId != null &&
-          item.categoryId != _selectedCategoryId) {
-        return false;
-      }
-      if (query.isEmpty) return true;
-      return item.nom.toLowerCase().contains(query) ||
-          item.sku.toLowerCase().contains(query) ||
-          (item.categorie?.toLowerCase().contains(query) ?? false);
-    }));
+    return _sorted(
+      _items.where((item) {
+        if (_selectedCategoryId != null &&
+            item.categoryId != _selectedCategoryId) {
+          return false;
+        }
+        if (query.isEmpty) return true;
+        return item.nom.toLowerCase().contains(query) ||
+            item.sku.toLowerCase().contains(query) ||
+            (item.categorie?.toLowerCase().contains(query) ?? false);
+      }),
+    );
   }
 
   /// Stock : filtre par statut + recherche.
   List<CatalogItemModel> get _filteredStock {
     final query = _query.trim().toLowerCase();
-    return _sorted(_items.where((item) {
-      if (!_matchesStatus(item, _selectedStatus)) return false;
-      if (query.isEmpty) return true;
-      return item.nom.toLowerCase().contains(query) ||
-          item.sku.toLowerCase().contains(query);
-    }));
+    return _sorted(
+      _items.where((item) {
+        if (!_matchesStatus(item, _selectedStatus)) return false;
+        if (query.isEmpty) return true;
+        return item.nom.toLowerCase().contains(query) ||
+            item.sku.toLowerCase().contains(query);
+      }),
+    );
   }
 
   bool _matchesStatus(CatalogItemModel item, String? status) {
@@ -183,7 +189,7 @@ class _ItemsScreenState extends State<ItemsScreen>
       case 'location':
         return item.sorties > 0;
       case 'entretien':
-        return item.entretienRequis && item.endommages == 0;
+        return item.entretienStock > 0;
       case 'endommage':
         return item.endommages > 0;
       case 'verifier':
@@ -206,13 +212,15 @@ class _ItemsScreenState extends State<ItemsScreen>
       _showPermissionDenied('gérer les articles');
       return;
     }
-    final created = await Navigator.of(context).push<ItemModel>(
-      MaterialPageRoute(builder: (_) => const AddItemPage()),
-    );
+    final created = await Navigator.of(
+      context,
+    ).push<ItemModel>(MaterialPageRoute(builder: (_) => const AddItemPage()));
     if (created != null && mounted) {
       _load();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('« ${created.nom} » a été ajouté au catalogue.')),
+        SnackBar(
+          content: Text('« ${created.nom} » a été ajouté au catalogue.'),
+        ),
       );
     }
   }
@@ -289,64 +297,105 @@ class _ItemsScreenState extends State<ItemsScreen>
     return Scaffold(
       backgroundColor: AppColors.dashSurfaceLow,
       appBar: AppBar(
-        backgroundColor: AppColors.dashSurface,
+        backgroundColor: AppColors.dashSurfaceLow,
         elevation: 0,
         scrolledUnderElevation: 0,
-        titleSpacing: 0,
-        leadingWidth: 56,
-        leading: IconButton(
-          icon: const Icon(Icons.search, color: AppColors.dashPrimary),
-          tooltip: 'Rechercher',
-          onPressed: () => _searchFocus.requestFocus(),
-        ),
+        automaticallyImplyLeading: false,
+        titleSpacing: 16,
         title: const Text(
           'Inventaire',
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 24,
             fontWeight: FontWeight.w700,
-            color: AppColors.dashPrimary,
+            color: AppColors.dashOnSurface,
             letterSpacing: -0.3,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.file_download_outlined,
-                color: AppColors.dashPrimary),
+            icon: const Icon(
+              Icons.bar_chart_rounded,
+              color: AppColors.dashPrimary,
+            ),
             tooltip: 'Exporter les stocks',
             onPressed: _openStockExport,
           ),
-          IconButton(
-            icon: const Icon(Icons.category_outlined,
-                color: AppColors.dashPrimary),
-            tooltip: 'Catégories',
-            onPressed: _openCategories,
+          PopupMenuButton<String>(
+            tooltip: 'Autres actions',
+            onSelected: (value) {
+              if (value == 'categories') {
+                _openCategories();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Notifications — bientôt disponible'),
+                  ),
+                );
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: 'categories',
+                child: Text('Gérer les catégories'),
+              ),
+              PopupMenuItem(
+                value: 'notifications',
+                child: Text('Notifications'),
+              ),
+            ],
           ),
           IconButton(
-            icon: const Icon(Icons.notifications_outlined,
-                color: AppColors.dashPrimary),
-            tooltip: 'Notifications',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('Notifications — bientôt disponible')),
-              );
-            },
+            icon: const Icon(Icons.add_rounded, color: AppColors.dashPrimary),
+            tooltip: _tabController.index == 0
+                ? 'Ajouter un article'
+                : 'Nouvelle entrée de stock',
+            onPressed: _fabAction,
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          dividerColor: AppColors.dashOutlineVariant,
-          indicatorColor: AppColors.dashPrimary,
-          indicatorWeight: 2,
-          labelColor: AppColors.dashPrimary,
-          unselectedLabelColor: AppColors.dashOnSurfaceVariant,
-          labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-          unselectedLabelStyle:
-              const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-          tabs: const [
-            Tab(text: 'Catalogue', icon: Icon(Icons.view_list_outlined, size: 18)),
-            Tab(text: 'Stock', icon: Icon(Icons.inventory_2_outlined, size: 18)),
-          ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(52),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.dashSurfaceContainer,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                dividerColor: Colors.transparent,
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicatorPadding: const EdgeInsets.all(3),
+                indicator: BoxDecoration(
+                  color: AppColors.dashSurface,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppColors.dashOutlineVariant),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                labelColor: AppColors.dashOnSurface,
+                unselectedLabelColor: AppColors.dashOnSurfaceVariant,
+                labelStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+                tabs: const [
+                  Tab(text: 'Catalogue'),
+                  Tab(text: 'Stock'),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
       body: SafeArea(
@@ -358,24 +407,14 @@ class _ItemsScreenState extends State<ItemsScreen>
               child: _loading
                   ? _buildLoadingSkeleton()
                   : _error != null
-                      ? AppErrorView(message: _error!, onRetry: _load)
-                      : TabBarView(
-                          controller: _tabController,
-                          children: [_buildCatalogTab(), _buildStockTab()],
-                        ),
+                  ? AppErrorView(message: _error!, onRetry: _load)
+                  : TabBarView(
+                      controller: _tabController,
+                      children: [_buildCatalogTab(), _buildStockTab()],
+                    ),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _fabAction,
-        backgroundColor: AppColors.dashPrimary,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        tooltip: _tabController.index == 0
-            ? 'Ajouter un article'
-            : 'Nouvelle entrée de stock',
-        child: const Icon(Icons.add),
       ),
       bottomNavigationBar: widget.showBottomNav
           ? AppBottomNav(
@@ -383,14 +422,16 @@ class _ItemsScreenState extends State<ItemsScreen>
               onTap: (index) {
                 if (index != 1) {
                   const labels = [
-                    'Dashboard',
+                    'Accueil',
                     'Inventaire',
-                    'Entretien',
                     'Réservations',
-                    'Plus'
+                    'Entretien',
+                    'Plus',
                   ];
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('« ${labels[index]} » arrive bientôt')),
+                    SnackBar(
+                      content: Text('« ${labels[index]} » arrive bientôt'),
+                    ),
                   );
                   return;
                 }
@@ -410,7 +451,11 @@ class _ItemsScreenState extends State<ItemsScreen>
       child: LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth;
-          final cols = width >= 1024 ? 3 : width >= 640 ? 2 : 1;
+          final cols = width >= 1024
+              ? 3
+              : width >= 360
+              ? 2
+              : 1;
           const spacing = 12.0;
           final cardWidth = (width - 32 - spacing * (cols - 1)) / cols;
           return SingleChildScrollView(
@@ -427,7 +472,11 @@ class _ItemsScreenState extends State<ItemsScreen>
                       radius: 24,
                       child: Row(
                         children: [
-                          const SkeletonImage(width: 60, height: 60, radius: 12),
+                          const SkeletonImage(
+                            width: 60,
+                            height: 60,
+                            radius: 12,
+                          ),
                           const SizedBox(width: 14),
                           Expanded(
                             child: Column(
@@ -460,24 +509,30 @@ class _ItemsScreenState extends State<ItemsScreen>
         onChanged: (value) => setState(() => _query = value),
         decoration: InputDecoration(
           hintText: _tabController.index == 0
-              ? 'Rechercher par nom, SKU ou catégorie...'
-              : 'Rechercher dans le stock...',
+              ? 'Nom, référence ou catégorie'
+              : 'Rechercher dans le stock',
           prefixIcon: const Icon(Icons.search, color: AppColors.dashOutline),
           filled: true,
           fillColor: AppColors.surface,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-          hintStyle: const TextStyle(color: AppColors.dashOutline, fontSize: 14),
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          hintStyle: const TextStyle(
+            color: AppColors.dashOutline,
+            fontSize: 14,
+          ),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(color: AppColors.dashOutlineVariant),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(color: AppColors.dashOutlineVariant),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.dashSecondary, width: 1.5),
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(
+              color: AppColors.dashSecondary,
+              width: 1.5,
+            ),
           ),
         ),
       ),
@@ -492,21 +547,39 @@ class _ItemsScreenState extends State<ItemsScreen>
     required List<(String?, String)> options,
     required String? selected,
     required ValueChanged<String?> onSelect,
+    bool showSort = false,
   }) {
     return SizedBox(
       height: 40,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
         children: [
-          for (final (value, label) in options) ...[
-            if (value != options.first.$1) const SizedBox(width: 8),
-            _FilterChip(
-              label: label,
-              active: selected == value,
-              onTap: () => onSelect(value),
+          Expanded(
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.only(left: 16),
+              children: [
+                for (final (value, label) in options) ...[
+                  if (value != options.first.$1) const SizedBox(width: 8),
+                  _FilterChip(
+                    label: label,
+                    active: selected == value,
+                    onTap: () => onSelect(value),
+                  ),
+                ],
+              ],
             ),
-          ],
+          ),
+          if (showSort)
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              tooltip: _sortAsc ? 'Tri A à Z' : 'Tri Z à A',
+              onPressed: () => setState(() => _sortAsc = !_sortAsc),
+              icon: Icon(
+                _sortAsc ? Icons.arrow_upward : Icons.arrow_downward,
+                size: 18,
+                color: AppColors.dashOnSurfaceVariant,
+              ),
+            ),
         ],
       ),
     );
@@ -514,9 +587,13 @@ class _ItemsScreenState extends State<ItemsScreen>
 
   Widget _buildCategoryChips() {
     return _buildChips(
-      options: [(null, 'Tous'), for (final c in _categories) (c.id, c.nom)],
+      options: [
+        (null, 'Tous · ${_items.length}'),
+        for (final c in _categories) (c.id, c.nom),
+      ],
       selected: _selectedCategoryId,
       onSelect: (value) => setState(() => _selectedCategoryId = value),
+      showSort: true,
     );
   }
 
@@ -525,6 +602,7 @@ class _ItemsScreenState extends State<ItemsScreen>
       options: _stockFilters,
       selected: _selectedStatus,
       onSelect: (value) => setState(() => _selectedStatus = value),
+      showSort: true,
     );
   }
 
@@ -541,22 +619,25 @@ class _ItemsScreenState extends State<ItemsScreen>
         const SizedBox(height: 12),
         _buildCategoryChips(),
         const SizedBox(height: 8),
-        _buildHeader('Tous les articles (${items.length})'),
         Expanded(
           child: RefreshIndicator(
             onRefresh: _load,
             color: AppColors.dashSecondary,
             child: items.isEmpty
-                ? _emptyScrollable(AppEmptyState(
-                    icon: Icons.inventory_2_outlined,
-                    title: _query.isEmpty && _selectedCategoryId == null
-                        ? 'Le catalogue est vide.'
-                        : 'Aucun article ne correspond à votre recherche.',
-                  ))
+                ? _emptyScrollable(
+                    AppEmptyState(
+                      icon: Icons.inventory_2_outlined,
+                      title: _query.isEmpty && _selectedCategoryId == null
+                          ? 'Le catalogue est vide.'
+                          : 'Aucun article ne correspond à votre recherche.',
+                    ),
+                  )
                 : _buildBento(
                     itemCount: items.length,
+                    mobileGrid: true,
                     cardBuilder: (context, cardWidth, index) => _CatalogCard(
                       item: items[index],
+                      cardWidth: cardWidth,
                       onTap: () => _openDetail(items[index]),
                     ),
                   ),
@@ -570,32 +651,9 @@ class _ItemsScreenState extends State<ItemsScreen>
   // Onglet Stock
   // ---------------------------------------------------------------------------
 
-  String get _stockHeaderTitle {
-    final count = _filteredStock.length;
-    switch (_selectedStatus) {
-      case 'disponible':
-        final units =
-            _filteredStock.fold<int>(0, (sum, i) => sum + i.quantite);
-        return 'Disponibles ($count · $units unités)';
-      case 'location':
-        return 'En location ($count)';
-      case 'entretien':
-        return 'En entretien ($count)';
-      case 'endommage':
-        return 'Endommagés ($count)';
-      case 'verifier':
-        return 'À vérifier ($count)';
-      case 'epuise':
-        return 'Épuisés ($count)';
-      case 'inactif':
-        return 'Inactifs ($count)';
-      default:
-        return 'État du stock ($count)';
-    }
-  }
-
   Map<String, List<CatalogItemModel>> _groupByCategory(
-      List<CatalogItemModel> items) {
+    List<CatalogItemModel> items,
+  ) {
     final map = <String, List<CatalogItemModel>>{};
     for (final item in items) {
       final key = item.categorie ?? 'Sans catégorie';
@@ -615,29 +673,29 @@ class _ItemsScreenState extends State<ItemsScreen>
         _buildSearchBar(),
         const SizedBox(height: 12),
         _buildStatusChips(),
-        const SizedBox(height: 8),
-        _buildHeader(_stockHeaderTitle),
+        const SizedBox(height: 12),
         Expanded(
           child: RefreshIndicator(
             onRefresh: _load,
             color: AppColors.dashSecondary,
             child: items.isEmpty
-                ? _emptyScrollable(AppEmptyState(
-                    icon: Icons.query_stats,
-                    title: _query.isEmpty && _selectedStatus == null
-                        ? 'Aucun article dans le stock.'
-                        : 'Aucun article ne correspond à ce filtre.',
-                  ))
+                ? _emptyScrollable(
+                    AppEmptyState(
+                      icon: Icons.query_stats,
+                      title: _query.isEmpty && _selectedStatus == null
+                          ? 'Aucun article dans le stock.'
+                          : 'Aucun article ne correspond à ce filtre.',
+                    ),
+                  )
                 : groupByCategory
-                    ? _buildCategoryGroupedStock(items)
-                    : _buildBento(
-                        itemCount: items.length,
-                        cardBuilder: (context, cardWidth, index) => _StockCard(
-                          item: items[index],
-                          cardWidth: cardWidth,
-                          onTap: () => _openDetail(items[index]),
-                        ),
-                      ),
+                ? _buildCategoryGroupedStock(items)
+                : _buildBento(
+                    itemCount: items.length,
+                    cardBuilder: (context, cardWidth, index) => _StockCard(
+                      item: items[index],
+                      onTap: () => _openDetail(items[index]),
+                    ),
+                  ),
           ),
         ),
       ],
@@ -654,8 +712,10 @@ class _ItemsScreenState extends State<ItemsScreen>
       itemBuilder: (context, index) {
         final category = groups.keys.elementAt(index);
         final categoryItems = groups[category]!;
-        final unitCount =
-            categoryItems.fold<int>(0, (sum, i) => sum + i.quantite);
+        final unitCount = categoryItems.fold<int>(
+          0,
+          (sum, i) => sum + i.quantite,
+        );
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: _CategoryStockSection(
@@ -678,12 +738,17 @@ class _ItemsScreenState extends State<ItemsScreen>
   Widget _buildBento({
     required int itemCount,
     required Widget Function(BuildContext context, double cardWidth, int index)
-        cardBuilder,
+    cardBuilder,
+    bool mobileGrid = false,
   }) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        final cols = width >= 1024 ? 3 : width >= 640 ? 2 : 1;
+        final cols = width >= 1024
+            ? 3
+            : width >= 640 || (mobileGrid && width >= 360)
+            ? 2
+            : 1;
         const spacing = 12.0;
         final cardWidth = (width - 32 - spacing * (cols - 1)) / cols;
         return SingleChildScrollView(
@@ -702,38 +767,6 @@ class _ItemsScreenState extends State<ItemsScreen>
           ),
         );
       },
-    );
-  }
-
-  Widget _buildHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: AppColors.dashOnSurface,
-              ),
-            ),
-          ),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            icon: Icon(
-              _sortAsc ? Icons.arrow_upward : Icons.arrow_downward,
-              size: 18,
-              color: AppColors.dashOnSurfaceVariant,
-            ),
-            tooltip: _sortAsc ? 'Tri A → Z' : 'Tri Z → A',
-            onPressed: () => setState(() => _sortAsc = !_sortAsc),
-          ),
-        ],
-      ),
     );
   }
 
@@ -834,10 +867,7 @@ class _CategoryStockSection extends StatelessWidget {
                 endIndent: 16,
                 color: AppColors.dashOutlineVariant,
               ),
-            _CategoryStockRow(
-              item: items[i],
-              onTap: () => onItemTap(items[i]),
-            ),
+            _CategoryStockRow(item: items[i], onTap: () => onItemTap(items[i])),
           ],
         ],
       ),
@@ -859,58 +889,72 @@ class _CategoryStockRow extends StatelessWidget {
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _Thumbnail(item: item, size: 44, radius: 8, enableHero: false),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.nom,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+              Row(
+                children: [
+                  _Thumbnail(
+                    item: item,
+                    size: 44,
+                    radius: 8,
+                    enableHero: false,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.nom,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.dashOnSurface,
+                          ),
+                        ),
+                        if (item.sku.isNotEmpty)
+                          Text(
+                            item.sku,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.dashOnSurfaceVariant,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.kpiGreen.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      '${item.quantite}',
                       style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.dashOnSurface,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.kpiGreen,
+                        fontFeatures: [FontFeature.tabularFigures()],
                       ),
                     ),
-                    if (item.sku.isNotEmpty)
-                      Text(
-                        item.sku,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.dashOnSurfaceVariant,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.kpiGreen.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  '${item.quantite}',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.kpiGreen,
-                    fontFeatures: [FontFeature.tabularFigures()],
                   ),
-                ),
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.chevron_right,
+                    size: 20,
+                    color: AppColors.dashOutline,
+                  ),
+                ],
               ),
-              const SizedBox(width: 4),
-              const Icon(
-                Icons.chevron_right,
-                size: 20,
-                color: AppColors.dashOutline,
-              ),
+              const SizedBox(height: 10),
+              _StockSegmentBar(item: item),
             ],
           ),
         ),
@@ -936,132 +980,39 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: active ? AppColors.dashPrimary : AppColors.surface,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: active ? AppColors.dashPrimary : AppColors.dashOutlineVariant,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.3,
-            color: active ? Colors.white : AppColors.dashOnSurfaceVariant,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Badge de statut — couleurs de la maquette « Logistics Manager »
-// ---------------------------------------------------------------------------
-
-class _StatusBadge extends StatelessWidget {
-  final String label;
-  final Color background;
-  final Color foreground;
-  final Color border;
-
-  const _StatusBadge({
-    required this.label,
-    required this.background,
-    required this.foreground,
-    required this.border,
-  });
-
-  const _StatusBadge.available()
-      : this(
-          label: 'Disponible',
-          background: AppColors.badgeAvailableBg,
-          foreground: AppColors.badgeAvailableFg,
-          border: AppColors.badgeAvailableBorder,
-        );
-
-  const _StatusBadge.neutral(String label)
-      : this(
-          label: label,
-          background: AppColors.badgeNeutralBg,
-          foreground: AppColors.badgeNeutralFg,
-          border: AppColors.badgeNeutralBorder,
-        );
-
-  const _StatusBadge.indigo(String label)
-      : this(
-          label: label,
-          background: AppColors.badgeIndigoBg,
-          foreground: AppColors.badgeIndigoFg,
-          border: AppColors.badgeIndigoBorder,
-        );
-
-  /// Stock non encore connu de l'appareil (article tout juste cree, ou
-  /// premiere synchronisation pas encore faite).
-  const _StatusBadge.unknown()
-      : this(
-          label: 'Stock à venir',
-          background: AppColors.badgeNeutralBg,
-          foreground: AppColors.badgeNeutralFg,
-          border: AppColors.badgeNeutralBorder,
-        );
-
-  const _StatusBadge.exhausted()
-      : this(
-          label: 'Épuisé',
-          background: AppColors.badgeDangerBg,
-          foreground: AppColors.badgeDangerFg,
-          border: AppColors.badgeDangerBorder,
-        );
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: BoxDecoration(
-        color: background,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: border),
-      ),
-      child: Text(
-        label.toUpperCase(),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.6,
-          color: foreground,
+        child: Container(
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: active ? AppColors.badgeIndigoBg : AppColors.surface,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: active
+                  ? AppColors.dashPrimary
+                  : AppColors.dashOutlineVariant,
+            ),
+          ),
+          child: Text(
+            label,
+            maxLines: 1,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: active
+                  ? AppColors.dashPrimary
+                  : AppColors.dashOnSurfaceVariant,
+            ),
+          ),
         ),
       ),
     );
   }
-}
-
-/// Résolution du badge selon la priorité : inactif → à vérifier →
-/// en location → entretien → disponible → épuisé.
-_StatusBadge _badgeOf(CatalogItemModel item) {
-  if (item.inactif) return const _StatusBadge.neutral('Inactif');
-  if (item.aVerifier) return const _StatusBadge.indigo('À Vérifier');
-  if (item.sorties > 0) return const _StatusBadge.indigo('En Location');
-  if (item.endommages > 0) {
-    return const _StatusBadge.neutral('Endommagé');
-  }
-  if (item.entretienRequis) {
-    return const _StatusBadge.neutral('En Entretien');
-  }
-  if (item.quantite > 0) return const _StatusBadge.available();
-  // Sans information de stock, on ne declare pas la rupture : l'article vient
-  // peut-etre d'etre cree et le serveur ne l'a pas encore compte.
-  if (!item.stockConnu) return const _StatusBadge.unknown();
-  return const _StatusBadge.exhausted();
 }
 
 // ---------------------------------------------------------------------------
@@ -1070,122 +1021,188 @@ _StatusBadge _badgeOf(CatalogItemModel item) {
 
 class _CatalogCard extends StatelessWidget {
   final CatalogItemModel item;
+  final double cardWidth;
   final VoidCallback onTap;
 
-  const _CatalogCard({required this.item, required this.onTap});
+  const _CatalogCard({
+    required this.item,
+    required this.cardWidth,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final label = (item.categorie ?? '—')
-        .split(' ')
-        .where((w) => w.isNotEmpty)
-        .join(' ')
-        .toUpperCase();
+    final available = item.quantite;
+    final rented = item.sorties;
+    final damaged = item.endommages;
+    final lost = item.perdus;
+    final maintenance = item.entretienStock;
+    final tracked = available + rented + maintenance + damaged + lost;
+    final total = item.total > tracked ? item.total : tracked;
+
+    String? statusLabel;
+    Color? statusColor;
+    if (item.aVerifier || damaged > 0) {
+      statusLabel = 'À vérifier';
+      statusColor = AppColors.danger;
+    } else if (maintenance > 0) {
+      statusLabel = 'En entretien';
+      statusColor = AppColors.warning;
+    } else if (rented > 0) {
+      statusLabel = 'En location';
+      statusColor = AppColors.dashPrimary;
+    } else if (available <= 0 && item.entretienRequis) {
+      statusLabel = 'Entretien requis';
+      statusColor = AppColors.warning;
+    }
+
+    final imageTint = statusLabel == 'À vérifier'
+        ? AppColors.badgeDangerBg
+        : statusLabel == 'En entretien' || statusLabel == 'Entretien requis'
+        ? AppColors.warningBg
+        : statusLabel == 'En location'
+        ? AppColors.badgeIndigoBg
+        : AppColors.successBg;
+    final imageHeight = (cardWidth * 0.72).clamp(110.0, 150.0).toDouble();
     return Material(
-      color: AppColors.dashSurfaceLow,
+      color: AppColors.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(18),
         side: const BorderSide(color: AppColors.dashOutlineVariant),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              _Thumbnail(item: item, size: 72, radius: 12),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.nom,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.dashOnSurface,
-                          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              height: imageHeight,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (item.photoUrl != null)
+                    Image.network(
+                      item.photoUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => _imagePlaceholder(imageTint),
+                    )
+                  else
+                    _imagePlaceholder(imageTint),
+                  if (statusLabel != null)
+                    Positioned(
+                      top: 10,
+                      left: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
                         ),
-                        const SizedBox(height: 3),
-                        Text(
-                          label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.8,
-                            color: AppColors.dashOnSurfaceVariant,
-                          ),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(999),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            _CountLine(label: 'Total', value: item.total),
-                            _CountLine(label: 'Avail', value: item.quantite),
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: BoxDecoration(
+                                color: statusColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              statusLabel,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.dashOnSurfaceVariant,
+                              ),
+                            ),
                           ],
                         ),
-                        const Spacer(),
-                        _badgeOf(item),
-                      ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.nom,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      height: 1.2,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.dashOnSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    item.categorie ?? 'Sans catégorie',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.dashOnSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _StockSegmentBar(item: item),
+                  const SizedBox(height: 8),
+                  Text(
+                    item.stockConnu || item.total > 0
+                        ? '$available / $total dispo'
+                        : 'Stock non renseigné',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.dashOnSurface,
+                    ),
+                  ),
+                  if (maintenance > 0 || damaged > 0 || rented > 0) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      maintenance > 0
+                          ? '$maintenance en entretien'
+                          : damaged > 0
+                          ? '$damaged abîmé${damaged > 1 ? 's' : ''}'
+                          : '$rented en location',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: damaged > 0
+                            ? AppColors.dangerText
+                            : AppColors.warningText,
+                      ),
                     ),
                   ],
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
-}
 
-class _CountLine extends StatelessWidget {
-  final String label;
-  final int value;
-
-  const _CountLine({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          '$label:',
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            letterSpacing: -0.3,
-            color: AppColors.dashOutline,
-          ),
+  Widget _imagePlaceholder(Color tint) {
+    return ColoredBox(
+      color: tint,
+      child: const Center(
+        child: Icon(
+          Icons.image_outlined,
+          size: 32,
+          color: AppColors.dashOutline,
         ),
-        const SizedBox(width: 6),
-        Text(
-          '$value',
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            letterSpacing: -0.3,
-            color: AppColors.dashOnSurface,
-            fontFeatures: [FontFeature.tabularFigures()],
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -1196,42 +1213,51 @@ class _CountLine extends StatelessWidget {
 
 class _StockCard extends StatelessWidget {
   final CatalogItemModel item;
-  final double cardWidth;
   final VoidCallback onTap;
 
-  const _StockCard({
-    required this.item,
-    required this.cardWidth,
-    required this.onTap,
-  });
+  const _StockCard({required this.item, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final label = (item.categorie ?? '—')
-        .split(' ')
-        .where((w) => w.isNotEmpty)
-        .join(' ')
-        .toUpperCase();
-    final statWidth = (cardWidth - 28 - 8) / 2;
+    final maintenance = item.entretienStock;
+    final tracked =
+        item.quantite +
+        item.sorties +
+        item.endommages +
+        item.perdus +
+        maintenance;
+    final total = item.total > tracked ? item.total : tracked;
+    final (status, statusColor, statusBackground) = item.inactif
+        ? ('Inactif', AppColors.badgeNeutralFg, AppColors.badgeNeutralBg)
+        : item.aVerifier || item.endommages > 0
+        ? ('À vérifier', AppColors.dangerText, AppColors.badgeDangerBg)
+        : item.sorties > 0
+        ? ('En location', AppColors.badgeIndigoFg, AppColors.badgeIndigoBg)
+        : maintenance > 0
+        ? ('En entretien', AppColors.warningText, AppColors.warningBg)
+        : item.quantite > 0
+        ? ('Disponible', AppColors.badgeAvailableFg, AppColors.badgeAvailableBg)
+        : item.entretienRequis
+        ? ('Entretien requis', AppColors.warningText, AppColors.warningBg)
+        : !item.stockConnu
+        ? ('Stock à venir', AppColors.badgeNeutralFg, AppColors.badgeNeutralBg)
+        : ('Épuisé', AppColors.badgeDangerFg, AppColors.badgeDangerBg);
     return Material(
-      color: AppColors.dashSurfaceLow,
+      color: AppColors.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(18),
         side: const BorderSide(color: AppColors.dashOutlineVariant),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _Thumbnail(item: item, size: 64, radius: 10, enableHero: false),
-                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1248,13 +1274,11 @@ class _StockCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          label,
+                          '${item.categorie ?? 'Sans catégorie'} · $total au total',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.8,
+                            fontSize: 13,
                             color: AppColors.dashOnSurfaceVariant,
                           ),
                         ),
@@ -1262,51 +1286,83 @@ class _StockCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Flexible(child: _badgeOf(item)),
-                ],
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 10),
-                child: Divider(height: 1, color: AppColors.dashOutlineVariant),
-              ),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  SizedBox(
-                    width: statWidth,
-                    child: _StockStat(
-                      label: 'Total',
-                      value: item.total,
-                      color: AppColors.dashOnSurfaceVariant,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusBackground,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: BoxDecoration(
+                            color: statusColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          status,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: statusColor,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  SizedBox(
-                    width: statWidth,
-                    child: _StockStat(
-                      label: 'Disponibles',
+                ],
+              ),
+              const SizedBox(height: 12),
+              _StockSegmentBar(item: item),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _StockMetric(
+                      label: 'Dispo',
                       value: item.quantite,
                       color: AppColors.kpiGreen,
                     ),
                   ),
-                  SizedBox(
-                    width: statWidth,
-                    child: _StockStat(
-                      label: 'En location',
+                  Expanded(
+                    child: _StockMetric(
+                      label: 'Location',
                       value: item.sorties,
                       color: AppColors.kpiIndigo,
                     ),
                   ),
-                  SizedBox(
-                    width: statWidth,
-                    child: _StockStat(
-                      label: 'Endommagés',
-                      value: item.endommages,
+                  Expanded(
+                    child: _StockMetric(
+                      label: 'Entretien',
+                      value: maintenance,
                       color: AppColors.kpiAmber,
+                    ),
+                  ),
+                  Expanded(
+                    child: _StockMetric(
+                      label: 'Abîmés',
+                      value: item.endommages,
+                      color: AppColors.kpiRose,
                     ),
                   ),
                 ],
               ),
+              if (item.perdus > 0) ...[
+                const SizedBox(height: 8),
+                _StockMetric(
+                  label: 'Perdus',
+                  value: item.perdus,
+                  color: AppColors.dashOutline,
+                ),
+              ],
             ],
           ),
         ),
@@ -1315,12 +1371,59 @@ class _StockCard extends StatelessWidget {
   }
 }
 
-class _StockStat extends StatelessWidget {
+class _StockSegmentBar extends StatelessWidget {
+  final CatalogItemModel item;
+
+  const _StockSegmentBar({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    final tracked =
+        item.quantite +
+        item.sorties +
+        item.endommages +
+        item.perdus +
+        item.entretienStock;
+    final total = item.total > tracked ? item.total : tracked;
+    final maintenance = item.entretienStock;
+    final remaining = (total - tracked).clamp(0, total).toInt();
+    final segments = <(int, Color)>[
+      if (item.quantite > 0) (item.quantite, AppColors.kpiGreen),
+      if (item.sorties > 0) (item.sorties, AppColors.kpiIndigo),
+      if (maintenance > 0) (maintenance, AppColors.kpiAmber),
+      if (item.endommages > 0) (item.endommages, AppColors.kpiRose),
+      if (item.perdus > 0) (item.perdus, AppColors.dashOutline),
+      if (remaining > 0) (remaining, AppColors.dashOutline),
+    ];
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: SizedBox(
+        width: double.infinity,
+        height: 10,
+        child: ColoredBox(
+          color: AppColors.dashOutlineVariant,
+          child: Row(
+            children: [
+              for (final (count, color) in segments)
+                Expanded(
+                  flex: count,
+                  child: ColoredBox(color: color),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StockMetric extends StatelessWidget {
   final String label;
   final int value;
   final Color color;
 
-  const _StockStat({
+  const _StockMetric({
     required this.label,
     required this.value,
     required this.color,
@@ -1328,45 +1431,43 @@ class _StockStat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.dashOutlineVariant),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$value',
+          style: TextStyle(
+            fontSize: 18,
+            height: 1,
+            fontWeight: FontWeight.w600,
+            color: value > 0 ? color : AppColors.dashOnSurfaceVariant,
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.dashOnSurfaceVariant,
+        ),
+        const SizedBox(height: 4),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppColors.dashOnSurfaceVariant,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            '$value',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.3,
-              color: AppColors.dashOnSurface,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
 }
@@ -1439,4 +1540,3 @@ class _Thumbnail extends StatelessWidget {
     );
   }
 }
-

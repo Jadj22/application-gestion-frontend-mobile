@@ -165,9 +165,9 @@ class _BookingRequestListScreenState extends State<BookingRequestListScreen> {
       ),
       bottomNavigationBar: widget.showBottomNav
           ? AppBottomNav(
-              currentIndex: 3,
+              currentIndex: 2,
               onTap: (index) {
-                if (index == 3) return;
+                if (index == 2) return;
                 Navigator.of(context).pop();
               },
             )

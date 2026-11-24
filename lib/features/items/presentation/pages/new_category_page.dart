@@ -96,9 +96,9 @@ class _NewCategoryPageState extends State<NewCategoryPage> {
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _submit() async {
@@ -126,10 +126,23 @@ class _NewCategoryPageState extends State<NewCategoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Nouvelle catégorie')),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: null,
+        leadingWidth: 120,
+        leading: TextButton.icon(
+          onPressed: () => Navigator.of(context).maybePop(),
+          icon: const Icon(Icons.chevron_left, size: 20),
+          label: const Text('Inventaire'),
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.primary,
+            alignment: Alignment.centerLeft,
+          ),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: Form(
             key: _formKey,
             child: Column(
@@ -188,19 +201,24 @@ class _NewCategoryPageState extends State<NewCategoryPage> {
                         : Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.add_a_photo_outlined,
-                                  size: 48, color: AppColors.dashOutline),
+                              Icon(
+                                Icons.add_a_photo_outlined,
+                                size: 48,
+                                color: AppColors.dashOutline,
+                              ),
                               const SizedBox(height: 8),
                               Text(
                                 'Ajouter une image',
-                                style: AppTextStyles.body
-                                    .copyWith(color: AppColors.dashOnSurfaceVariant),
+                                style: AppTextStyles.body.copyWith(
+                                  color: AppColors.dashOnSurfaceVariant,
+                                ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 '(optionnel)',
-                                style: AppTextStyles.labelCaps
-                                    .copyWith(color: AppColors.dashOutline),
+                                style: AppTextStyles.labelCaps.copyWith(
+                                  color: AppColors.dashOutline,
+                                ),
                               ),
                             ],
                           ),
@@ -225,16 +243,22 @@ class _NewCategoryPageState extends State<NewCategoryPage> {
                   isExpanded: true,
                   decoration: const InputDecoration(
                     hintText: 'Non défini',
-                    prefixIcon: Icon(Icons.build_outlined,
-                        color: Colors.grey, size: 20),
+                    prefixIcon: Icon(
+                      Icons.build_outlined,
+                      color: Colors.grey,
+                      size: 20,
+                    ),
                   ),
                   items: const [
                     DropdownMenuItem(
-                        value: null, child: Text('Non défini (par défaut)')),
+                      value: null,
+                      child: Text('Non défini (par défaut)'),
+                    ),
                     DropdownMenuItem(value: true, child: Text('Oui')),
                     DropdownMenuItem(value: false, child: Text('Non')),
                   ],
-                  onChanged: (value) => setState(() => _entretienRequis = value),
+                  onChanged: (value) =>
+                      setState(() => _entretienRequis = value),
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: 16),
@@ -248,20 +272,24 @@ class _NewCategoryPageState extends State<NewCategoryPage> {
                     child: Text(
                       _error!,
                       style: const TextStyle(
-                          color: AppColors.dangerText, fontSize: 13),
+                        color: AppColors.dangerText,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ],
-                const SizedBox(height: 28),
-                PrimaryButton(
-                  label: 'Ajouter la catégorie',
-                  icon: Icons.add_box_outlined,
-                  isLoading: _submitting,
-                  onPressed: _submit,
-                ),
               ],
             ),
           ),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+        child: PrimaryButton(
+          label: 'Créer la catégorie',
+          icon: Icons.add_box_outlined,
+          isLoading: _submitting,
+          onPressed: _submit,
         ),
       ),
     );

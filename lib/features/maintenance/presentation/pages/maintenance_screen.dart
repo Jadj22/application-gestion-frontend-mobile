@@ -8,6 +8,8 @@ import '../../../../shared/widgets/app_bottom_nav.dart';
 import '../../../../shared/widgets/skeleton/skeleton.dart';
 import '../../../auth/presentation/session_controller.dart';
 import '../../../business/data/models/business.dart';
+import '../../../items/data/items_repository.dart';
+import '../../../items/data/models/catalog_item.dart';
 import '../../data/maintenance_repository.dart';
 import '../../data/models/maintenance_task.dart';
 import '../widgets/maintenance_dashboard.dart';
@@ -29,10 +31,13 @@ class MaintenanceScreen extends StatefulWidget {
 
 class _MaintenanceScreenState extends State<MaintenanceScreen> {
   late final MaintenanceRepository _repository;
+  late final ItemsRepository _itemsRepository;
   late final Business _business;
   late final SessionController _session;
 
   List<MaintenanceTaskModel> _tasks = [];
+  List<CatalogItemModel> _catalogItems = [];
+  String? _catalogError;
   bool _loading = true;
   String? _error;
 
@@ -46,6 +51,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   void initState() {
     super.initState();
     _repository = context.read<MaintenanceRepository>();
+    _itemsRepository = context.read<ItemsRepository>();
     _session = context.read<SessionController>();
     _business = _session.currentBusiness!;
     _load();
@@ -64,7 +70,20 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     });
     try {
       final tasks = await _repository.tasks(_business.id);
-      if (mounted) setState(() => _tasks = tasks);
+      List<CatalogItemModel> catalogItems = [];
+      String? catalogError;
+      try {
+        catalogItems = await _itemsRepository.catalog(_business.id);
+      } on ApiException catch (e) {
+        catalogError = e.message;
+      }
+      if (mounted) {
+        setState(() {
+          _tasks = tasks;
+          _catalogItems = catalogItems;
+          _catalogError = catalogError;
+        });
+      }
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
     } finally {
@@ -93,7 +112,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     );
   }
 
-  Future<void> _openNewTask() async {
+  Future<void> _openNewTask({String? preselectedItemId}) async {
     if (!_session.can('entretien.manage')) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -103,7 +122,9 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       return;
     }
     final created = await Navigator.of(context).push<MaintenanceTaskModel>(
-      MaterialPageRoute(builder: (_) => const NewTaskPage()),
+      MaterialPageRoute(
+        builder: (_) => NewTaskPage(preselectedItemId: preselectedItemId),
+      ),
     );
     if (created != null && mounted) _load();
   }
@@ -173,12 +194,6 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                 ? _LoadError(message: _error!, onRetry: _load)
                 : _buildContent(),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        onPressed: _showNotes ? null : _openNewTask,
-        child: const Icon(Icons.add),
-      ),
       bottomNavigationBar: widget.showBottomNav
           ? AppBottomNav(
               currentIndex: 3,
@@ -186,8 +201,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                 if (index != 3) {
                   const labels = [
                     'Accueil',
-                    'Articles',
-                    'Stock',
+                    'Inventaire',
+                    'Réservations',
                     'Entretien',
                     'Plus'
                   ];
@@ -219,7 +234,6 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Ligne 1 : Titre + menu overflow
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
           child: Row(
@@ -228,13 +242,16 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                 child: Text('Entretien', style: AppTextStyles.h1),
               ),
               PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
-                tooltip: 'Plus d\'options',
+                icon: const Icon(Icons.add, color: AppColors.primary),
+                tooltip: 'Actions d’entretien',
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 onSelected: (value) {
                   switch (value) {
+                    case 'new':
+                      _openNewTask();
+                      break;
                     case 'procedures':
                       Navigator.of(context).push(
                         MaterialPageRoute(
@@ -245,9 +262,42 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                     case 'bulk':
                       _openBulkTask();
                       break;
+                    case 'toggle_view':
+                      setState(() => _showDashboard = !_showDashboard);
+                      break;
+                    case 'history':
+                      _showHistory();
+                      break;
                   }
                 },
                 itemBuilder: (_) => [
+                  const PopupMenuItem(
+                    value: 'new',
+                    child: Row(
+                      children: [
+                        Icon(Icons.add_task,
+                            size: 20, color: AppColors.primary),
+                        SizedBox(width: 12),
+                        Text('Nouvelle tâche'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'toggle_view',
+                    child: Row(
+                      children: [
+                        Icon(
+                          _showDashboard
+                              ? Icons.list
+                              : Icons.dashboard_outlined,
+                          size: 20,
+                          color: AppColors.textSecondary,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(_showDashboard ? 'Vue liste' : 'Tableau de bord'),
+                      ],
+                    ),
+                  ),
                   const PopupMenuItem(
                     value: 'procedures',
                     child: Row(
@@ -256,6 +306,17 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                             size: 20, color: AppColors.primary),
                         SizedBox(width: 12),
                         Text('Procédures'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'history',
+                    child: Row(
+                      children: [
+                        Icon(Icons.history,
+                            size: 20, color: AppColors.textSecondary),
+                        SizedBox(width: 12),
+                        Text('Historique'),
                       ],
                     ),
                   ),
@@ -275,16 +336,9 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
             ],
           ),
         ),
-        // Ligne 2 : Onglets + toggle vue
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          child: Row(
-            children: [
-              _buildSegmentedControl(),
-              const Spacer(),
-              if (!_showNotes) _buildViewToggle(),
-            ],
-          ),
+          child: _buildSegmentedControl(),
         ),
         const SizedBox(height: 12),
         if (_showNotes)
@@ -314,9 +368,14 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
               onRefresh: _load,
               child: MaintenanceDashboard(
                 tasks: _tasks,
+                catalogItems: _catalogItems,
+                catalogError: _catalogError,
                 onNewTask: _openNewTask,
                 onBulkTask: _openBulkTask,
                 onTaskTap: _openTaskDetail,
+                onPlanItem: (item) => _openNewTask(
+                  preselectedItemId: item.id,
+                ),
               ),
             ),
           )
@@ -335,48 +394,27 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
 
   Widget _buildSegmentedControl() {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: AppColors.inputBackground,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          _SegmentOption(
-            label: 'NOTES',
-            active: _showNotes,
-            onTap: () => setState(() => _showNotes = true),
+          Expanded(
+            child: _SegmentOption(
+              label: 'Notes',
+              active: _showNotes,
+              onTap: () => setState(() => _showNotes = true),
+            ),
           ),
-          _SegmentOption(
-            label: 'TÂCHES',
-            active: !_showNotes,
-            onTap: () => setState(() => _showNotes = false),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildViewToggle() {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppColors.inputBackground,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _ViewToggleOption(
-            icon: Icons.dashboard_outlined,
-            active: _showDashboard,
-            onTap: () => setState(() => _showDashboard = true),
-          ),
-          _ViewToggleOption(
-            icon: Icons.list,
-            active: !_showDashboard,
-            onTap: () => setState(() => _showDashboard = false),
+          Expanded(
+            child: _SegmentOption(
+              label: 'Tâches',
+              active: !_showNotes,
+              onTap: () => setState(() => _showNotes = false),
+            ),
           ),
         ],
       ),
@@ -523,7 +561,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   }
 }
 
-/// Option du sélecteur NOTES / TÂCHES.
+/// Option du sélecteur Notes / Tâches.
 class _SegmentOption extends StatelessWidget {
   final String label;
   final bool active;
@@ -540,10 +578,10 @@ class _SegmentOption extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: active ? AppColors.surface : Colors.transparent,
-          borderRadius: BorderRadius.circular(999),
+          borderRadius: BorderRadius.circular(9),
           boxShadow: active
               ? const [
                   BoxShadow(
@@ -554,55 +592,15 @@ class _SegmentOption extends StatelessWidget {
                 ]
               : null,
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.4,
-            color: active ? AppColors.primary : AppColors.hint,
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+              color: active ? AppColors.textPrimary : AppColors.textSecondary,
+            ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Option du toggle vue Dashboard / Liste.
-class _ViewToggleOption extends StatelessWidget {
-  final IconData icon;
-  final bool active;
-  final VoidCallback onTap;
-
-  const _ViewToggleOption({
-    required this.icon,
-    required this.active,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: active ? AppColors.surface : Colors.transparent,
-          borderRadius: BorderRadius.circular(999),
-          boxShadow: active
-              ? const [
-                  BoxShadow(
-                    color: Color(0x14000000),
-                    blurRadius: 6,
-                    offset: Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
-        child: Icon(
-          icon,
-          size: 18,
-          color: active ? AppColors.primary : AppColors.hint,
         ),
       ),
     );

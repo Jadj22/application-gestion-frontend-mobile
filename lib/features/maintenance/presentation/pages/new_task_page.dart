@@ -169,10 +169,23 @@ class _NewTaskPageState extends State<NewTaskPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Nouvelle tâche')),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: null,
+        leadingWidth: 104,
+        leading: TextButton.icon(
+          onPressed: () => Navigator.of(context).maybePop(),
+          icon: const Icon(Icons.chevron_left, size: 20),
+          label: const Text('Entretien'),
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.primary,
+            alignment: Alignment.centerLeft,
+          ),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: Form(
             key: _formKey,
             child: Column(
@@ -369,16 +382,18 @@ class _NewTaskPageState extends State<NewTaskPage> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 28),
-                PrimaryButton(
-                  label: 'Créer la tâche',
-                  icon: Icons.add_task_outlined,
-                  isLoading: _submitting,
-                  onPressed: _submit,
-                ),
               ],
             ),
           ),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+        child: PrimaryButton(
+          label: 'Créer la tâche',
+          icon: Icons.add_task_outlined,
+          isLoading: _submitting,
+          onPressed: _loadingOptions || _optionsError != null ? null : _submit,
         ),
       ),
     );

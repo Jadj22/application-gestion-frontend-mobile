@@ -2,8 +2,8 @@ import '../../../../core/network/media_url.dart';
 
 /// Ligne du catalogue — jointure `/items/` + `/stock/` par item.
 ///
-/// `quantite` = disponibilité (RM-04) ; le reste de l'état du stock
-/// (total, sorties, endommagés, perdus) sert à l'onglet Stock.
+/// `quantite` = disponibilité (RM-04) ; les autres compteurs (total, sorties,
+/// entretien, endommagés, perdus) servent à l'onglet Stock.
 class CatalogItemModel {
   final String id;
   final String nom;
@@ -11,6 +11,7 @@ class CatalogItemModel {
   final int quantite;
   final int total;
   final int sorties;
+  final int enEntretien;
   final int endommages;
   final int perdus;
   final String? categorie;
@@ -36,6 +37,7 @@ class CatalogItemModel {
     this.quantite = 0,
     this.total = 0,
     this.sorties = 0,
+    this.enEntretien = 0,
     this.endommages = 0,
     this.perdus = 0,
     this.categorie,
@@ -59,6 +61,14 @@ class CatalogItemModel {
   /// Article reellement en rupture, par opposition a un stock non renseigne.
   bool get epuise => faible;
 
+  /// Unités actuellement en entretien, distinctes du flag de maintenance
+  /// requis sur l'article.
+  int get entretienStock {
+    if (enEntretien > 0) return enEntretien;
+    final rest = total - quantite - sorties - endommages - perdus;
+    return rest > 0 ? rest : 0;
+  }
+
   factory CatalogItemModel.fromJson(
     Map<String, dynamic> json, {
     Map<String, dynamic>? stock,
@@ -80,6 +90,7 @@ class CatalogItemModel {
       quantite: (s['disponibles'] as num?)?.toInt() ?? 0,
       total: (s['total'] as num?)?.toInt() ?? 0,
       sorties: (s['sorties'] as num?)?.toInt() ?? 0,
+      enEntretien: (s['en_entretien'] as num?)?.toInt() ?? 0,
       endommages: (s['endommages'] as num?)?.toInt() ?? 0,
       perdus: (s['perdus'] as num?)?.toInt() ?? 0,
       categorie: category is Map<String, dynamic>

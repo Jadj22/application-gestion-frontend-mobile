@@ -4,7 +4,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Barre de navigation principale — Design DODOME Émeraude
+// Barre de navigation principale — Design épuré iOS / SF Pro / Inter
+// Conforme à la spécification visuelle « Test déco – Écrans de l'app »
 // ─────────────────────────────────────────────────────────────────────────────
 
 /// Modèle décrivant un onglet de navigation.
@@ -20,36 +21,36 @@ class NavDestination {
   });
 }
 
-/// Liste centralisée des destinations de navigation.
-const _destinations = [
+/// Liste des 5 destinations de navigation principales.
+const destinations = [
   NavDestination(
-    icon: Icons.dashboard_outlined,
-    activeIcon: Icons.dashboard_rounded,
-    label: 'Dashboard',
+    icon: Icons.grid_view_outlined,
+    activeIcon: Icons.grid_view_rounded,
+    label: 'Accueil',
   ),
   NavDestination(
-    icon: Icons.category_outlined,
-    activeIcon: Icons.category_rounded,
-    label: 'Catalogue',
+    icon: Icons.layers_outlined,
+    activeIcon: Icons.layers_rounded,
+    label: 'Inventaire',
   ),
   NavDestination(
-    icon: Icons.calendar_month_outlined,
+    icon: Icons.calendar_today_outlined,
     activeIcon: Icons.calendar_month_rounded,
     label: 'Réservations',
   ),
   NavDestination(
-    icon: Icons.inventory_2_outlined,
-    activeIcon: Icons.inventory_2_rounded,
-    label: 'Stock',
+    icon: Icons.build_outlined,
+    activeIcon: Icons.build_rounded,
+    label: 'Entretien',
   ),
   NavDestination(
-    icon: Icons.more_horiz_rounded,
+    icon: Icons.more_horiz_outlined,
     activeIcon: Icons.more_horiz_rounded,
     label: 'Plus',
   ),
 ];
 
-/// Barre de navigation principale avec indicateur émeraude animé.
+/// Barre de navigation inférieure iOS (Hauteur 68px, fond #F5F5F7, bordure #E0E0E0).
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -64,29 +65,20 @@ class AppBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(
-          top: BorderSide(color: AppColors.border, width: 1),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 16,
-            offset: Offset(0, -4),
-          ),
-        ],
+        color: AppColors.background,
+        border: Border(top: BorderSide(color: AppColors.border, width: 1)),
       ),
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 68,
+          height: 64,
           child: Row(
             children: List.generate(
-              _destinations.length,
+              destinations.length,
               (i) => _NavItem(
-                destination: _destinations[i],
+                destination: destinations[i],
                 index: i,
-                currentIndex: currentIndex,
+                isSelected: i == currentIndex,
                 onTap: onTap,
               ),
             ),
@@ -97,82 +89,60 @@ class AppBottomNav extends StatelessWidget {
   }
 }
 
-// ─── Élément individuel de navigation ─────────────────────────────────────────
-
 class _NavItem extends StatelessWidget {
   final NavDestination destination;
   final int index;
-  final int currentIndex;
+  final bool isSelected;
   final ValueChanged<int> onTap;
 
   const _NavItem({
     required this.destination,
     required this.index,
-    required this.currentIndex,
+    required this.isSelected,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final selected = index == currentIndex;
+    final activeColor = AppColors.primary;
+    final inactiveColor = AppColors.textSecondary;
+    final color = isSelected ? activeColor : inactiveColor;
 
     return Expanded(
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
+        child: InkResponse(
           onTap: () => onTap(index),
-          borderRadius: BorderRadius.circular(16),
+          containedInkWell: true,
+          highlightShape: BoxShape.rectangle,
           splashColor: AppColors.primary.withValues(alpha: 0.08),
           highlightColor: AppColors.primary.withValues(alpha: 0.04),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // ── Indicateur + Icône ────────────────────────────────────
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.easeOutCubic,
-                  width: selected ? 52 : 40,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    color: selected
-                        ? AppColors.primaryLight
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(999),
+          child: Semantics(
+            selected: isSelected,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isSelected ? destination.activeIcon : destination.icon,
+                    size: 22,
+                    color: color,
                   ),
-                  child: Center(
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 200),
-                      child: Icon(
-                        selected
-                            ? destination.activeIcon
-                            : destination.icon,
-                        key: ValueKey('${destination.label}_$selected'),
-                        size: 22,
-                        color: selected
-                            ? AppColors.primary
-                            : AppColors.textSecondary,
-                      ),
+                  const SizedBox(height: 3),
+                  Text(
+                    destination.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.navLabel.copyWith(
+                      color: color,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w400,
                     ),
                   ),
-                ),
-                const SizedBox(height: 3),
-                // ── Label ─────────────────────────────────────────────────
-                AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 200),
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontSize: 10.5,
-                    fontWeight:
-                        selected ? FontWeight.w700 : FontWeight.w500,
-                    color: selected
-                        ? AppColors.primary
-                        : AppColors.textSecondary,
-                    height: 1.0,
-                  ),
-                  child: Text(destination.label),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

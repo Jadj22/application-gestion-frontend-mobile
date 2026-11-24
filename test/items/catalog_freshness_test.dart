@@ -10,10 +10,10 @@ import 'package:flutter_test/flutter_test.dart';
 /// rupture — sur un article qu'on venait de créer avec dix unités.
 void main() {
   Map<String, dynamic> item({String id = 'srv-1', String statut = 'ACTIF'}) => {
-        'id': id,
-        'nom': 'Chaise',
-        'statut': statut,
-      };
+    'id': id,
+    'nom': 'Chaise',
+    'statut': statut,
+  };
 
   group('Stock inconnu', () {
     test('un article sans ligne de stock n\'est pas déclaré épuisé', () {
@@ -75,6 +75,54 @@ void main() {
 
       expect(ligne.epuise, isTrue);
       expect(ligne.sorties, 5);
+    });
+  });
+
+  group('Entretien du stock', () {
+    test(
+      'le flag d’entretien requis ne compte pas comme unité en entretien',
+      () {
+        final ligne = CatalogItemModel.fromJson(
+          item(),
+          stock: const {
+            'total': 150,
+            'disponibles': 150,
+            'entretien_requis': true,
+          },
+        );
+
+        expect(ligne.entretienRequis, isTrue);
+        expect(ligne.entretienStock, 0);
+      },
+    );
+
+    test('utilise le nombre réel d’unités en entretien', () {
+      final ligne = CatalogItemModel.fromJson(
+        item(),
+        stock: const {
+          'total': 150,
+          'disponibles': 140,
+          'en_entretien': 10,
+          'entretien_requis': true,
+        },
+      );
+
+      expect(ligne.entretienStock, 10);
+    });
+
+    test('estime l’entretien depuis le reliquat si le champ est absent', () {
+      final ligne = CatalogItemModel.fromJson(
+        item(),
+        stock: const {
+          'total': 100,
+          'disponibles': 70,
+          'sorties': 20,
+          'endommages': 5,
+          'perdus': 2,
+        },
+      );
+
+      expect(ligne.entretienStock, 3);
     });
   });
 }

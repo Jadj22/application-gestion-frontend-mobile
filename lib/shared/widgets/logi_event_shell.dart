@@ -16,6 +16,7 @@ class LogiEventShell extends StatelessWidget {
   final bool showAppBar;
   final bool showNavigation;
   final String? pageTitle;
+  final Widget? bottomNavigationBar;
 
   const LogiEventShell({
     super.key,
@@ -25,6 +26,7 @@ class LogiEventShell extends StatelessWidget {
     this.showAppBar = true,
     this.showNavigation = true,
     this.pageTitle,
+    this.bottomNavigationBar,
   });
 
   static const double _breakpoint = 768;
@@ -37,6 +39,7 @@ class LogiEventShell extends StatelessWidget {
         backgroundColor: AppColors.dashSurface,
         appBar: _buildSecondaryAppBar(context),
         body: _withSyncBanner(body),
+        bottomNavigationBar: bottomNavigationBar,
       );
     }
     return LayoutBuilder(
@@ -248,10 +251,11 @@ class _Sidebar extends StatelessWidget {
   const _Sidebar({required this.currentIndex, required this.onTap});
 
   static const _items = [
-    (0, Icons.dashboard_outlined, Icons.dashboard, 'Dashboard'),
-    (1, Icons.inventory_2_outlined, Icons.inventory_2, 'Inventaire'),
-    (2, Icons.build_outlined, Icons.build, 'Entretien'),
-    (3, Icons.event_available_outlined, Icons.event_available, 'Réservations'),
+    (0, Icons.grid_view_outlined, Icons.grid_view_rounded, 'Accueil'),
+    (1, Icons.layers_outlined, Icons.layers_rounded, 'Inventaire'),
+    (2, Icons.calendar_today_outlined, Icons.calendar_today_rounded, 'Réservations'),
+    (3, Icons.build_outlined, Icons.build_rounded, 'Entretien'),
+    (4, Icons.more_horiz_outlined, Icons.more_horiz_rounded, 'Plus'),
   ];
 
   @override

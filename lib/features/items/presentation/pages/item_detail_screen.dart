@@ -447,10 +447,10 @@ class _ItemDetailScreenState extends State<ItemDetailScreen>
         onTap: (index) {
           if (index != 1) {
             const labels = [
-              'Dashboard',
+              'Accueil',
               'Inventaire',
-              'Entretien',
               'Réservations',
+              'Entretien',
               'Plus',
             ];
             ScaffoldMessenger.of(context).showSnackBar(

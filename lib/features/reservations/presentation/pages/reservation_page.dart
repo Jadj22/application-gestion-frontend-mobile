@@ -5,6 +5,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/widgets/logi_event_shell.dart';
+import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/skeleton/skeleton.dart';
 import '../../../auth/presentation/session_controller.dart';
 import '../../../items/data/items_repository.dart';
@@ -378,7 +379,7 @@ class _ReservationPageState extends State<ReservationPage> {
                       isWide ? 32 : 16,
                       isWide ? 24 : 8,
                       isWide ? 32 : 16,
-                      isWide ? 32 : 120,
+                      isWide ? 32 : 16,
                     ),
                     child: Center(
                       child: ConstrainedBox(
@@ -391,6 +392,20 @@ class _ReservationPageState extends State<ReservationPage> {
                     ),
                   ),
       ),
+      bottomNavigationBar: !isWide &&
+              !widget.isDetailMode &&
+              !_loading &&
+              _error == null
+          ? SafeArea(
+              minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              child: PrimaryButton(
+                label: 'Créer la réservation',
+                icon: Icons.check,
+                isLoading: _submitting,
+                onPressed: _confirm,
+              ),
+            )
+          : null,
     );
   }
 
@@ -491,6 +506,7 @@ class _ReservationPageState extends State<ReservationPage> {
                   child: _buildSubmitPanel(
                     period: period,
                     availability: availability,
+                    showButton: true,
                   ),
                 ),
               ],
@@ -515,6 +531,7 @@ class _ReservationPageState extends State<ReservationPage> {
             _buildSubmitPanel(
               period: period,
               availability: availability,
+              showButton: false,
             ),
           ],
         ],
@@ -525,6 +542,7 @@ class _ReservationPageState extends State<ReservationPage> {
   Widget _buildSubmitPanel({
     DateTimeRange? period,
     Map<String, int>? availability,
+    required bool showButton,
   }) {
     final items = _availableItems;
     var count = 0;
@@ -634,36 +652,38 @@ class _ReservationPageState extends State<ReservationPage> {
               ),
             ),
           ],
-          const Divider(height: 32, color: AppColors.dashOutlineVariant),
-          const SizedBox(height: 12),
-          ElevatedButton(
-            onPressed: _submitting ? null : _confirm,
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size.fromHeight(52),
-              backgroundColor: AppColors.dashPrimary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          if (showButton) ...[
+            const Divider(height: 32, color: AppColors.dashOutlineVariant),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: _submitting ? null : _confirm,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size.fromHeight(52),
+                backgroundColor: AppColors.dashPrimary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
+              child: _submitting
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      'CONFIRMER LA RÉSERVATION',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
             ),
-            child: _submitting
-                ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Text(
-                    'CONFIRMER LA RÉSERVATION',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-          ),
+          ],
         ],
       ),
     );

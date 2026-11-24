@@ -629,11 +629,22 @@ class _AddItemPageState extends State<AddItemPage> {
     final suggestion = _suggestion;
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Modifier l\'article' : 'Nouvel article'),
+        automaticallyImplyLeading: false,
+        title: null,
+        leadingWidth: 120,
+        leading: TextButton.icon(
+          onPressed: () => Navigator.of(context).maybePop(),
+          icon: const Icon(Icons.chevron_left, size: 20),
+          label: const Text('Inventaire'),
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.primary,
+            alignment: Alignment.centerLeft,
+          ),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
           child: Form(
             key: _formKey,
             child: Column(
@@ -947,18 +958,18 @@ class _AddItemPageState extends State<AddItemPage> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 28),
-                PrimaryButton(
-                  label: _isEditing
-                      ? 'Enregistrer les modifications'
-                      : 'Ajouter l\'article',
-                  icon: _isEditing ? Icons.save_outlined : Icons.add_box_outlined,
-                  isLoading: _submitting,
-                  onPressed: _submit,
-                ),
               ],
             ),
           ),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+        child: PrimaryButton(
+          label: _isEditing ? 'Enregistrer les modifications' : 'Créer l\'article',
+          icon: _isEditing ? Icons.save_outlined : Icons.add_box_outlined,
+          isLoading: _submitting,
+          onPressed: _submit,
         ),
       ),
     );
