@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/widgets/app_bottom_nav.dart';
 import '../../../../shared/widgets/feedback/app_empty_state.dart';
 import '../../../../shared/widgets/feedback/app_error_view.dart';

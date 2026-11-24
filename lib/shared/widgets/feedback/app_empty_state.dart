@@ -50,7 +50,7 @@ class AppEmptyState extends StatelessWidget {
               Text(
                 subtitle!,
                 textAlign: TextAlign.center,
-                style: AppTextStyles.caption,
+                style: AppTextStyles.bodySmall,
               ),
             ],
             if (actionLabel != null && onAction != null) ...[
