@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../shared/widgets/app_bottom_nav.dart';
 import '../../../../shared/widgets/skeleton/skeleton.dart';
+import '../../../../shared/widgets/sync_status_banner.dart';
 import '../../../auth/presentation/session_controller.dart';
 import '../../../business/data/models/business.dart';
 import '../../data/items_repository.dart';
@@ -17,6 +18,7 @@ import 'add_item_page.dart';
 import 'categories_list_page.dart';
 import 'item_detail_screen.dart';
 import 'stock_entry_page.dart';
+import '../widgets/stock_export_bottom_sheet.dart';
 
 /// Filtre d'ouverture depuis les KPI du dashboard.
 class InventoryFocus {
@@ -121,7 +123,13 @@ class _ItemsScreenState extends State<ItemsScreen>
         });
       }
     } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+      if (mounted && _items.isEmpty) setState(() => _error = e.message);
+    } on NetworkUnavailableException catch (e) {
+      if (mounted && _items.isEmpty) setState(() => _error = e.message);
+    } catch (_) {
+      if (mounted && _items.isEmpty) {
+        setState(() => _error = 'Impossible de charger le catalogue.');
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -224,6 +232,10 @@ class _ItemsScreenState extends State<ItemsScreen>
     }
   }
 
+  void _openStockExport() {
+    StockExportBottomSheet.show(context, _business);
+  }
+
   Future<void> _openStockEntry() async {
     if (!_session.can('stock.mouvement')) {
       _showPermissionDenied('gérer le stock');
@@ -297,6 +309,12 @@ class _ItemsScreenState extends State<ItemsScreen>
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.file_download_outlined,
+                color: AppColors.dashPrimary),
+            tooltip: 'Exporter les stocks',
+            onPressed: _openStockExport,
+          ),
+          IconButton(
             icon: const Icon(Icons.category_outlined,
                 color: AppColors.dashPrimary),
             tooltip: 'Catégories',
@@ -332,14 +350,21 @@ class _ItemsScreenState extends State<ItemsScreen>
       ),
       body: SafeArea(
         top: false,
-        child: _loading
-            ? _buildLoadingSkeleton()
-            : _error != null
-                ? _LoadError(message: _error!, onRetry: _load)
-                : TabBarView(
-                    controller: _tabController,
-                    children: [_buildCatalogTab(), _buildStockTab()],
-                  ),
+        child: Column(
+          children: [
+            const SyncStatusBanner(),
+            Expanded(
+              child: _loading
+                  ? _buildLoadingSkeleton()
+                  : _error != null
+                      ? _LoadError(message: _error!, onRetry: _load)
+                      : TabBarView(
+                          controller: _tabController,
+                          children: [_buildCatalogTab(), _buildStockTab()],
+                        ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _fabAction,

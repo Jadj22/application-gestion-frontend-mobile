@@ -306,6 +306,7 @@ class SessionController extends ChangeNotifier {
         await _selectBusiness(businesses.first);
       }
       status = SessionStatus.authenticated;
+      await _rememberSession();
       _setWelcome('Invitation acceptée ! Bienvenue dans l\'équipe.');
       notifyListeners();
       // Enregistrer le token push après acceptation
@@ -327,6 +328,7 @@ class SessionController extends ChangeNotifier {
       if (businesses.isNotEmpty) {
         await _selectBusiness(businesses.last); // Le nouveau business
       }
+      await _rememberSession();
       _setWelcome('Invitation acceptée ! Bienvenue dans l\'équipe.');
       notifyListeners();
     } finally {
@@ -377,6 +379,7 @@ class SessionController extends ChangeNotifier {
           businesses.where((b) => b.id == created.id).firstOrNull ?? created;
       await _selectBusiness(match);
       status = SessionStatus.authenticated;
+      await _rememberSession();
       notifyListeners();
       return created;
     } finally {
@@ -386,6 +389,19 @@ class SessionController extends ChangeNotifier {
 
   Future<void> _selectBusiness(Business business) async {
     currentBusiness = business;
+    if (businesses.contains(business) && businesses.first.id != business.id) {
+      businesses = [
+        business,
+        ...businesses.where((b) => b.id != business.id),
+      ];
+      final current = user;
+      if (current != null) {
+        offline.auth.updateSession(
+          user: current.toJson(),
+          businesses: businesses.map((b) => b.toJson()).toList(),
+        ).ignore();
+      }
+    }
     apiClient.businessId = business.id;
     // La base locale et la file de synchronisation sont cloisonnées par
     // business : le moteur doit savoir sur quel tenant il travaille avant

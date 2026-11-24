@@ -153,6 +153,13 @@ class _BusinessOnboardingPageState extends State<BusinessOnboardingPage> {
       await session.createBusiness(_draft);
     } on ApiException catch (e) {
       if (mounted) setState(() => _createError = e.message);
+    } on NetworkUnavailableException catch (e) {
+      if (mounted) setState(() => _createError = e.message);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _createError =
+            'Une erreur inattendue est survenue. Veuillez vérifier votre connexion.');
+      }
     }
   }
 

@@ -361,6 +361,13 @@ class _AddItemPageState extends State<AddItemPage> {
     } on OfflineUnsupportedException catch (e) {
       // Hors ligne : on l'explique, et la saisie manuelle continue.
       if (mounted) _signaler(e.message);
+    } on NetworkUnavailableException {
+      if (mounted) {
+        _signaler(
+          'La génération avec l\'IA nécessite une connexion Internet.\n\n'
+          'Vous pouvez continuer à remplir la fiche manuellement.',
+        );
+      }
     } on ApiException catch (e) {
       if (mounted) {
         final message = (e.statusCode == 502 || e.statusCode == 503)
@@ -368,6 +375,10 @@ class _AddItemPageState extends State<AddItemPage> {
                 'Réessayez dans quelques instants ou saisissez la fiche à la main.'
             : e.message;
         _signaler(message);
+      }
+    } catch (_) {
+      if (mounted) {
+        _signaler('Impossible de contacter le service IA. Vous pouvez renseigner la fiche manuellement.');
       }
     } finally {
       if (mounted) setState(() => _describing = false);

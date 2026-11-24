@@ -8,6 +8,7 @@ import '../../../../shared/widgets/animated_entrance.dart';
 import '../../../../shared/widgets/app_bottom_nav.dart';
 import '../../../../shared/widgets/guide/guide_overlay.dart';
 import '../../../../shared/widgets/skeleton/skeleton.dart';
+import '../../../../shared/widgets/sync_status_banner.dart';
 import '../../../auth/presentation/session_controller.dart';
 import '../../../items/data/models/category.dart';
 import '../../../items/data/models/item.dart';
@@ -296,6 +297,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       children: [
         _DashboardTopBar(key: _topBarKey, businessName: businessName),
+        const SyncStatusBanner(),
         Expanded(
           child: RefreshIndicator(
             onRefresh: _load,
@@ -662,13 +664,19 @@ class _KpiGrid extends StatelessWidget {
           ),
         ];
 
+        // Ratio adaptatif : les écrans mobiles (<600) ont besoin d'assez de hauteur
+        // pour loger l'icône, la valeur, le label et le badge sans overflow.
+        final double ratio = cols == 2
+            ? (constraints.maxWidth < 360 ? 1.05 : 1.15)
+            : 1.4;
+
         return GridView.count(
           crossAxisCount: cols,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 8,
           crossAxisSpacing: 8,
-          childAspectRatio: cols == 2 ? 1.35 : 1.5,
+          childAspectRatio: ratio,
           children: [
             for (var i = 0; i < cards.length; i++)
               AnimatedEntrance(
@@ -709,7 +717,7 @@ class _KpiCard extends StatelessWidget {
     return Material(
       color: AppColors.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         side: const BorderSide(color: AppColors.dashOutlineVariant),
       ),
       clipBehavior: Clip.antiAlias,
@@ -718,84 +726,99 @@ class _KpiCard extends StatelessWidget {
         splashColor: iconColor.withValues(alpha: 0.06),
         highlightColor: iconColor.withValues(alpha: 0.03),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // â”€â”€ IcÃ´ne dans un container colorÃ© â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── Icône dans un container coloré ──────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    width: 36,
-                    height: 36,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(
                       color: iconColor.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(9),
                     ),
-                    child: Icon(icon, color: iconColor, size: 20),
+                    child: Icon(icon, color: iconColor, size: 18),
                   ),
                   Icon(
                     Icons.arrow_forward_ios_rounded,
-                    size: 12,
+                    size: 11,
                     color: AppColors.dashOutline,
                   ),
                 ],
               ),
-              const Spacer(),
-              // â”€â”€ Valeur numÃ©rique â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                  color: valueColor ?? AppColors.dashOnSurface,
-                  letterSpacing: -0.8,
-                  height: 1.0,
-                ),
-              ),
-              const SizedBox(height: 2),
-              // â”€â”€ Label descriptif â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-              Text(
-                label.toUpperCase(),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.0,
-                  color: AppColors.dashOnSurfaceVariant,
-                  height: 1.2,
-                ),
-              ),
-              // â”€â”€ Badge de statut optionnel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-              if (badgeLabel != null && badgeColor != null) ...[
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: badgeColor!.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    badgeLabel!.toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: badgeColor,
-                      letterSpacing: 0.8,
+              const SizedBox(height: 6),
+              // ── Valeur numérique, label & badge ─────────────────────────
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        value,
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: valueColor ?? AppColors.dashOnSurface,
+                          letterSpacing: -0.8,
+                          height: 1.0,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 2),
+                    Text(
+                      label.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.8,
+                        color: AppColors.dashOnSurfaceVariant,
+                        height: 1.2,
+                      ),
+                    ),
+                    if (badgeLabel != null && badgeColor != null) ...[
+                      const SizedBox(height: 5),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 2.5),
+                          decoration: BoxDecoration(
+                            color: badgeColor!.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            badgeLabel!.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.w700,
+                              color: badgeColor,
+                              letterSpacing: 0.7,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-              ],
+              ),
             ],
           ),
         ),
       ),
-);
-    }
+    );
   }
+}
 
 
 // ---------------------------------------------------------------------------

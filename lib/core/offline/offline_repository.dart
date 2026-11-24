@@ -96,6 +96,11 @@ class OfflineRepository {
         final local = await store.list(descriptor.type, businessId: businessId);
         if (local.isEmpty) rethrow;
         debugPrint('Lecture ${descriptor.type} dégradée : ${error.message}');
+      } catch (error) {
+        connectivity.reportNetworkFailure();
+        final local = await store.list(descriptor.type, businessId: businessId);
+        if (local.isEmpty) rethrow;
+        debugPrint('Lecture ${descriptor.type} dégradée suite à erreur : $error');
       }
     }
 
@@ -134,6 +139,9 @@ class OfflineRepository {
             await store.purge(descriptor.type, resolvedId);
             return null;
           }
+        } catch (error) {
+          connectivity.reportNetworkFailure();
+          debugPrint('Lecture unique ${descriptor.type}/$resolvedId dégradée : $error');
         }
       }
     }

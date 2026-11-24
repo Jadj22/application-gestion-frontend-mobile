@@ -82,7 +82,13 @@ class _ItemDetailScreenState extends State<ItemDetailScreen>
       final item = await _repository.detail(_business.id, widget.itemId);
       if (mounted) setState(() => _item = item);
     } on ApiException catch (e) {
-      if (mounted) setState(() => _error = e.message);
+      if (mounted && _item == null) setState(() => _error = e.message);
+    } on NetworkUnavailableException catch (e) {
+      if (mounted && _item == null) setState(() => _error = e.message);
+    } catch (_) {
+      if (mounted && _item == null) {
+        setState(() => _error = 'Impossible de charger l\'article.');
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }

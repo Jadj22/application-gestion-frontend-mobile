@@ -293,7 +293,7 @@ class ApiClient {
     if (response.statusCode >= 400) {
       throw ApiException(
         response.statusCode,
-        _extractErrorMessage(decoded, response.body),
+        _extractErrorMessage(decoded, response.body, response.statusCode),
       );
     }
 
@@ -392,7 +392,7 @@ class ApiClient {
     if (response.statusCode >= 400) {
       throw ApiException(
         response.statusCode,
-        _extractErrorMessage(decoded, response.body),
+        _extractErrorMessage(decoded, response.body, response.statusCode),
       );
     }
 
@@ -548,7 +548,7 @@ class ApiClient {
 
   /// Normalise les erreurs DRF : `{"detail": ...}`, `{"champ": [...]}`,
   /// liste d'erreurs ou texte brut.
-  String _extractErrorMessage(dynamic decoded, String rawBody) {
+  String _extractErrorMessage(dynamic decoded, String rawBody, [int? statusCode]) {
     if (decoded is Map<String, dynamic>) {
       final detail = decoded['detail'];
       if (detail is String && detail.isNotEmpty) return detail;
@@ -571,14 +571,19 @@ class ApiClient {
         return first['detail'] as String;
       }
     }
-    if (rawBody.trim().isNotEmpty) {
-      final trimmed = rawBody.trim();
-      if (trimmed.startsWith('<!DOCTYPE') ||
-          trimmed.startsWith('<html') ||
-          trimmed.startsWith('<HTML')) {
-        return 'Le serveur a renvoyé une page HTML au lieu d\'une réponse API. '
-            'Vérifiez l\'URL de l\'API (API_BASE_URL).';
+    final trimmed = rawBody.trim();
+    final lower = trimmed.toLowerCase();
+    final isHtml = lower.startsWith('<!doctype') ||
+        lower.startsWith('<html') ||
+        lower.contains('<title>server error');
+    if (isHtml) {
+      if (statusCode != null && statusCode >= 500) {
+        return 'Une erreur interne est survenue sur le serveur ($statusCode). Veuillez réessayer dans quelques instants.';
       }
+      return 'Le serveur a renvoyé une page HTML au lieu d\'une réponse API. '
+          'Vérifiez l\'URL de l\'API (API_BASE_URL).';
+    }
+    if (trimmed.isNotEmpty) {
       if (trimmed.length > 240) {
         return '${trimmed.substring(0, 240)}…';
       }
